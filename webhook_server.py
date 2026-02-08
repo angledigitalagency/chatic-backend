@@ -146,9 +146,26 @@ def handle_payment_intent(intent):
 
     # Metadata extraction
     metadata = intent.get('metadata', {})
-    source = metadata.get('source', 'ifeelsochatty').lower()
     
-    # Try to get name from shipping or billing details if valid
+    # 1. Direct Metadata
+    source = metadata.get('source', '').lower()
+
+    # 2. If no source, check if this is a Subscription (Invoice)
+    if not source and intent.get('invoice'):
+        try:
+            invoice_id = intent.get('invoice')
+            invoice = stripe.Invoice.retrieve(invoice_id)
+            if invoice.get('subscription'):
+                subscription = stripe.Subscription.retrieve(invoice.get('subscription'))
+                sub_metadata = subscription.get('metadata', {})
+                source = sub_metadata.get('source', '').lower()
+                print(f"   - Found source in Subscription: {source}")
+        except Exception as e:
+            print(f"   - Error fetching subscription metadata: {e}")
+
+    # Fallback to default
+    if not source:
+        source = 'ifeelsochatty'
     customer_name = "Valued Customer"
     if intent.get('shipping'):
          customer_name = intent.get('shipping', {}).get('name', customer_name)
