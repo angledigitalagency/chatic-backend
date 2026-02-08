@@ -2,7 +2,8 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from twilio.rest import Client
+from email.mime.multipart import MIMEMultipart
+# from twilio.rest import Client  <-- Removed to lazy load
 
 class Deliverer:
     def __init__(self, identity="chatic"):

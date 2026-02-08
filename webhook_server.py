@@ -108,6 +108,7 @@ def handle_checkout_session(session):
             print(f"📻 Triggering Fluency Radio Welcome for {customer_email}...")
         # Note: We do this AFTER updating the sheet to ensure data is safe.
         # Run in a separate thread to avoid blocking the webhook response (and potential timeout/crash)
+        is_new_user = True # Assuming all paid users get welcome for now (MVP)
         if is_new_user:
             import threading
             from fluency_radio.fluency_deliverer import FluencyDeliverer # Import here for thread scope
