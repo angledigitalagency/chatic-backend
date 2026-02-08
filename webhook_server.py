@@ -43,6 +43,9 @@ def webhook():
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         handle_checkout_session(session)
+    elif event['type'] == 'payment_intent.succeeded':
+        intent = event['data']['object']
+        handle_payment_intent(intent)
 
     return jsonify({'status': 'success'}), 200
 
@@ -111,6 +114,71 @@ def handle_checkout_session(session):
 
     else:
         print("⚠️ Payment received but no email found.")
+
+def handle_payment_intent(intent):
+    """
+    Fallback handler for payment_intent.succeeded if checkout.session.completed is unavailable.
+    """
+    # PaymentIntent objects usually have 'receipt_email' or we look up the customer
+    customer_email = intent.get('receipt_email')
+    
+    # Sometimes email is in metadata if we put it there, or we have to fetch the customer
+    if not customer_email and intent.get('customer'):
+        try:
+            customer = stripe.Customer.retrieve(intent.get('customer'))
+            customer_email = customer.get('email')
+        except Exception as e:
+            print(f"Error fetching customer for intent: {e}")
+
+    # Metadata extraction
+    metadata = intent.get('metadata', {})
+    source = metadata.get('source', 'ifeelsochatty').lower()
+    
+    # Try to get name from shipping or billing details if valid
+    customer_name = "Valued Customer"
+    if intent.get('shipping'):
+         customer_name = intent.get('shipping', {}).get('name', customer_name)
+    
+    # Normalize source
+    product_db = "ifeelsochatty"
+    if "fluency" in source:
+        product_db = "fluency"
+
+    if customer_email:
+        print(f"💰 New Payment (Intent): {customer_email} (Source: {source} -> DB: {product_db})")
+        
+        storage = Storage(product=product_db)
+        start_date = datetime.now().strftime("%Y-%m-%d")
+        
+        storage.add_user(
+            email=customer_email,
+            phone="", # Phone might not be available in simple intent
+            name=customer_name,
+            start_date=start_date,
+            stripe_id=intent.get('customer') or intent.get('id'),
+            source=source
+        )
+        
+        # Welcome Logic
+        if product_db == "fluency":
+            trigger_fluency_welcome(customer_email, customer_name)
+        else:
+            print(f"✨ Registered iFeelSoChatty user: {customer_email}")
+    else:
+        print("⚠️ Payment Intent succeeded but no email found.")
+
+def trigger_fluency_welcome(email, name):
+    print(f"📻 Triggering Fluency Radio Welcome for {email}...")
+    try:
+        from fluency_radio.fluency_deliverer import FluencyDeliverer
+        fluency_deliverer = FluencyDeliverer()
+        success = fluency_deliverer.send_welcome_email(email, name)
+        if success:
+            print("✅ Fluency Radio Welcome Email Sent!")
+        else:
+            print("❌ Failed to send Fluency Radio Welcome Email.")
+    except Exception as e:
+        print(f"❌ Error in Fluency Radio logic: {e}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4242))
