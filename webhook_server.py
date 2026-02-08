@@ -15,7 +15,8 @@ app = Flask(__name__)
 
 # Stripe Params
 stripe.api_key = os.getenv("STRIPE_API_KEY")
-endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+# Check for STRIPE_ENDPOINT_SECRET (Production/Render) first, then STRIPE_WEBHOOK_SECRET (Local)
+endpoint_secret = os.getenv("STRIPE_ENDPOINT_SECRET") or os.getenv("STRIPE_WEBHOOK_SECRET")
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
