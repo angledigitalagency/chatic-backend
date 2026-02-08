@@ -2,6 +2,30 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from twilio.rest import Client
+
+class Deliverer:
+    def __init__(self, identity="chatic"):
+        self.identity = identity
+        self.smtp_server = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+        self.smtp_port = os.getenv("EMAIL_PORT", 587)
+        
+        if identity == "fluency":
+            self.username = os.getenv("FLUENCY_EMAIL_USER")
+            self.password = os.getenv("FLUENCY_EMAIL_PASSWORD")
+            # Fallback to shared credentials if specific ones are missing
+            if not self.username:
+                print("⚠️ Fluency credentials missing. Falling back to shared email.")
+                self.username = os.getenv("EMAIL_HOST_USER")
+                self.password = os.getenv("EMAIL_HOST_PASSWORD")
+            
+            self.display_name = "Fluency Radio"
+        else:
+            # Default to Chatic
+            self.username = os.getenv("EMAIL_HOST_USER")
+            self.password = os.getenv("EMAIL_HOST_PASSWORD")
+            self.display_name = "I Feel So Chatty"
+        
         # Twilio Config (Shared for now, or could be split too)
         self.twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
         self.twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
@@ -110,7 +134,7 @@ from email.mime.multipart import MIMEMultipart
                     <p><em>Fluency Radio Team</em></p>
                 </div>
 
-            </div>
+                </div>
         </body>
         </html>
         """

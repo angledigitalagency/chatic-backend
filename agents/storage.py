@@ -79,7 +79,8 @@ class Storage:
         # Ensure tabs exist - Common Schema for now, can diverge later
         self._ensure_tab(sheet, "Songs_DB", ["Spotify_ID", "Artist", "Title", "Link", "Extracted_Sentences", "Word_Analysis", "Level_1_Verbs", "Full_Lyrics", "Last_Updated"])
         self._ensure_tab(sheet, "User_Logs", ["Email", "Spotify_ID", "Song_Title", "Date_Sent"])
-        self._ensure_tab(sheet, "Users", ["Email", "Phone", "Name", "Preferences", "Active", "Start_Date", "Stripe_Customer_ID", "Source"])
+        # We handle "Users" vs "User" dynamically in methods, but ensure at least one exists if needed
+        # self._ensure_tab(sheet, "Users", ["Email", "Phone", "Name", "Preferences", "Active", "Start_Date", "Stripe_Customer_ID", "Source"])
         
         return sheet
 
@@ -266,8 +267,19 @@ class Storage:
         
         # Ensure Headers include new columns
         headers = ["Email", "Phone", "Name", "Preferences", "Active", "Start_Date", "Stripe_Customer_ID", "Source"]
-        self._ensure_tab(sheet, "Users", headers)
-        ws = sheet.worksheet("Users")
+        
+        # Determine Tab Name (User vs Users)
+        tab_name = "Users"
+        try:
+            ws = sheet.worksheet("Users")
+        except gspread.WorksheetNotFound:
+            try:
+                ws = sheet.worksheet("User")
+                tab_name = "User"
+            except gspread.WorksheetNotFound:
+                # Create "Users" if neither exists
+                self._ensure_tab(sheet, "Users", headers)
+                ws = sheet.worksheet("Users")
         
         # Check if user exists (by Email)
         try:
@@ -299,7 +311,14 @@ class Storage:
         sheet = self.get_or_create_sheet()
         if not sheet: return []
         
-        ws = sheet.worksheet("Users")
+        # Determine Tab Name (User vs Users)
+        try:
+            ws = sheet.worksheet("Users")
+        except gspread.WorksheetNotFound:
+            try:
+                ws = sheet.worksheet("User")
+            except gspread.WorksheetNotFound:
+                return []
         
         # Use get_all_values to avoid 'duplicate header' error if there are empty cols
         rows = ws.get_all_values()
