@@ -106,25 +106,34 @@ def handle_checkout_session(session):
         # 3. Welcome Logic Routing
         if product_db == "fluency":
             print(f"📻 Triggering Fluency Radio Welcome for {customer_email}...")
-            try:
-                from agents.deliverer import Deliverer # Ensure import availability if needed or rely on local imports
-                from fluency_radio.fluency_deliverer import FluencyDeliverer
-                
-                fluency_deliverer = FluencyDeliverer()
-                
-                # Send the Welcome Email
-                success = fluency_deliverer.send_welcome_email(customer_email, customer_name or "Student")
-                
-                if success:
-                    print("✅ Fluency Radio Welcome Email Sent!")
-                else:
-                    print("❌ Failed to send Fluency Radio Welcome Email.")
-                    
-            except Exception as e:
-                print(f"❌ Error in Fluency Radio logic: {e}")
+        # Note: We do this AFTER updating the sheet to ensure data is safe.
+        # Run in a separate thread to avoid blocking the webhook response (and potential timeout/crash)
+        if is_new_user:
+            import threading
+            from fluency_radio.fluency_deliverer import FluencyDeliverer # Import here for thread scope
+
+            def send_async_email(email, name, src):
+                try:
+                    if src == 'fluency':
+                        print(f"📻 Triggering Fluency Radio Welcome for {email}...")
+                        fluency_deliverer = FluencyDeliverer()
+                        success = fluency_deliverer.send_welcome_email(email, name)
+                        if success:
+                            print("✅ Fluency Radio Welcome Email Sent!")
+                        else:
+                            print("❌ Failed to send Fluency Radio Welcome Email.")
+                    else:
+                        print(f"📧 Triggering Chatic Welcome for {email}...")
+                        # Existing logic for Chatic welcome...
+                        print(f"✨ Registered iFeelSoChatty user: {email}. No immediate welcome flow defined for generic Chatic yet.")
+                        pass 
+                except Exception as e:
+                    print(f"❌ Email sending failed: {e}")
+
+            email_thread = threading.Thread(target=send_async_email, args=(customer_email, customer_name or "Student", product_db))
+            email_thread.start()
         else:
-            # iFeelSoChatty Logic
-            print(f"✨ Registered iFeelSoChatty user: {customer_email}. No immediate welcome flow defined for generic Chatic yet.")
+            print(f"✨ User {customer_email} already exists. No welcome email sent.")
 
     else:
         print("⚠️ Payment received but no email found.")

@@ -2,41 +2,12 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from twilio.rest import Client
-
-class Deliverer:
-    def __init__(self, identity="chatic"):
-        self.identity = identity
-        self.smtp_server = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-        self.smtp_port = os.getenv("EMAIL_PORT", 587)
-        
-        if identity == "fluency":
-            self.username = os.getenv("FLUENCY_EMAIL_USER")
-            self.password = os.getenv("FLUENCY_EMAIL_PASSWORD")
-            # Fallback to shared credentials if specific ones are missing
-            if not self.username:
-                print("⚠️ Fluency credentials missing. Falling back to shared email.")
-                self.username = os.getenv("EMAIL_HOST_USER")
-                self.password = os.getenv("EMAIL_HOST_PASSWORD")
-            
-            self.display_name = "Fluency Radio"
-        else:
-            # Default to Chatic
-            self.username = os.getenv("EMAIL_HOST_USER")
-            self.password = os.getenv("EMAIL_HOST_PASSWORD")
-            self.display_name = "I Feel So Chatty"
-        
         # Twilio Config (Shared for now, or could be split too)
         self.twilio_sid = os.getenv("TWILIO_ACCOUNT_SID")
         self.twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
         self.twilio_phone = os.getenv("TWILIO_PHONE_NUMBER")
-        self.twilio_client = None
-        
-        if self.twilio_sid and self.twilio_token:
-            try:
-                self.twilio_client = Client(self.twilio_sid, self.twilio_token)
-            except Exception as e:
-                print(f"Twilio Init Failed: {e}")
+        self.twilio_client = None 
+        # Lazy load client only when sending SMS to save memory
 
     def send_email(self, recipient, subject, body_html, body_text=None):
         """
@@ -169,11 +140,16 @@ class Deliverer:
         """
         Sends an SMS using Twilio.
         """
-        if not self.twilio_client or not self.twilio_phone:
+        if not self.twilio_sid or not self.twilio_token or not self.twilio_phone:
             print("Twilio not configured.")
             return False
             
         try:
+            # Lazy load Twilio Client
+            from twilio.rest import Client
+            if not self.twilio_client:
+                self.twilio_client = Client(self.twilio_sid, self.twilio_token)
+
             message = self.twilio_client.messages.create(
                 body=body,
                 from_=self.twilio_phone,
