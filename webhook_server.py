@@ -74,13 +74,12 @@ def handle_checkout_session(session):
         product_db = "fluency"
     
     if customer_email:
-        print(f"💰 New Payment: {customer_email} (Source: {source} -> DB: {product_db})")
+        print(f"💰 New Payment: {customer_email} (Source: {source})")
         
-        # Initialize Storage with the correct product/DB
-        storage = Storage(product=product_db)
         start_date = datetime.now().strftime("%Y-%m-%d")
-        
-        # 1. Add User to the correct DB
+
+        # 1. ALWAYS add to the specific Product DB
+        storage = Storage(product=product_db)
         storage.add_user(
             email=customer_email,
             phone=phone,
@@ -89,14 +88,28 @@ def handle_checkout_session(session):
             stripe_id=customer_id,
             source=source
         )
+        print(f"   - Added to {product_db} DB.")
+
+        # 2. IF Fluency, ALSO add to the Master iFeelSoChatty DB (Mirroring)
+        if product_db == "fluency":
+            master_storage = Storage(product="ifeelsochatty")
+            master_storage.add_user(
+                email=customer_email,
+                phone=phone,
+                name=customer_name or "New Student",
+                start_date=start_date,
+                stripe_id=customer_id,
+                source=f"{source} (mirrored)"
+            )
+            print(f"   - Mirrored to ifeelsochatty DB.")
         
-        # 2. Welcome Logic Routing
+        # 3. Welcome Logic Routing
         if product_db == "fluency":
             print(f"📻 Triggering Fluency Radio Welcome for {customer_email}...")
             try:
+                from agents.deliverer import Deliverer # Ensure import availability if needed or rely on local imports
                 from fluency_radio.fluency_deliverer import FluencyDeliverer
-                # TODO: Ensure FluencyDeliverer knows which DB to read/write from if needed, 
-                # though currently it mostly sends email.
+                
                 fluency_deliverer = FluencyDeliverer()
                 
                 # Send the Welcome Email
@@ -146,19 +159,34 @@ def handle_payment_intent(intent):
         product_db = "fluency"
 
     if customer_email:
-        print(f"💰 New Payment (Intent): {customer_email} (Source: {source} -> DB: {product_db})")
+        print(f"💰 New Payment (Intent): {customer_email} (Source: {source})")
         
-        storage = Storage(product=product_db)
         start_date = datetime.now().strftime("%Y-%m-%d")
         
+        # 1. ALWAYS add to the specific Product DB
+        storage = Storage(product=product_db)
         storage.add_user(
             email=customer_email,
-            phone="", # Phone might not be available in simple intent
+            phone="", 
             name=customer_name,
             start_date=start_date,
             stripe_id=intent.get('customer') or intent.get('id'),
             source=source
         )
+        print(f"   - Added to {product_db} DB.")
+        
+        # 2. IF Fluency, ALSO add to the Master iFeelSoChatty DB (Mirroring)
+        if product_db == "fluency":
+            master_storage = Storage(product="ifeelsochatty")
+            master_storage.add_user(
+                email=customer_email,
+                phone="", 
+                name=customer_name,
+                start_date=start_date,
+                stripe_id=intent.get('customer') or intent.get('id'),
+                source=f"{source} (mirrored)"
+            )
+            print(f"   - Mirrored to ifeelsochatty DB.")
         
         # Welcome Logic
         if product_db == "fluency":
