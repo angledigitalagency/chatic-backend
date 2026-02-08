@@ -1,0 +1,71 @@
+,,,,,,
+,also need for this document ,,,,,
+https://docs.google.com/document/d/1lX8FAFGIvPtudK46Rt1hkpwutZRPry-XTftq0592Ykw/edit?usp=sharing,Level Curriculum | The method | The 5 Fluency Artifacts,,,,,
+https://docs.google.com/document/d/18h1khIlShUJ8KsIF4_WDa5fkUhfCXu9ZTkMUxVnHGd8/edit?usp=sharing,Fluency Engine Branstoom how technical works weekly,,,,,
+https://docs.google.com/document/d/1Jp8bMA1mxnygBOPRa9Trxkqwe-jeh0p5gfq6thACexA/edit?usp=sharing,Fluency weekly schedule,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,Receive ,via email,via sms 
+,week 1 ,Day 1 ,Group Session Link ,,Link,available to chabot to choose a game 
+,,Day 2,"Song , Lyrics","Song Link, Spanish Lyrics, English Lyrics",,
+,,Day 3,Fluency Verbs,Ser · Estar · Tener · Querer ,"Song lines that contain verbs  Ser · Estar · Tener · Querer · Poder
+ or its conjugations in text of the email.  
+",TBD
+,,,,,"Then in a following section, each sentence ,ai will create a conversational context on how that answer was formed or could have been formed
+",
+,,,,,"stacked over each other, 
+
+1. The new Question,  formed, invented from the sentence that was printed before
+2. The new Question, in spanish 
+3. The original sentence of the song, that was already printed 
+
+",
+,,,,,"The coversation created with the sentence of the song will  have a same, similar o new conversational logic.
+
+ Llike the reverse engineering of a answer to the question, it has to maitain the same verb and a relation, so the student can see, the variation of the verb when is used to formulate a question and how to use it to answer.
+
+For example From Juanes:Tengo la camisa negra the system detects: Verb: tener
+Creates the english question:
+
+line 1  Do you have the shirt black shirt? 
+line 2  Tienes la camisa negra? 
+line 3  Tengo la camisa negra
+
+Are you afraid?
+ ¿Tienes miedo?
+ → Sí, tengo miedo",
+,,Day 4,Action Verbs,"Song lines with hacer, ir, decir, dar, llegar, pasar, poner, hablar, comer, vivir, tomar, trabajar, sentir","do same, as fluency verbs.
+
+
+take out the sentences as they are, in which this verbs appear.
+
+ Llike the reverse engineering of a answer to the question, it has to maitain the same verb and a relation, so the student can see, the variation of the verb when is used to formulate a question and how to use it to answer.
+",
+,,Day 5,Preposition Patterns,,"his are the prepositions in the song 
+
+
+",
+,,Day 6,Conjugate song sentences ,Send the son sentence in past and future,"send all sentences already send in past and in future
+
+",
+,,Day 7,Quiz,images and ask people to describe. POV,"so we can create images from day 6, still don't now how many , because that is related to your capacity, and also how we are going to store them and for how long. 
+
+in a no limits scenario i will ask you to create a picture of every sentence
+
+like real escenarios in the corresponding tense, because people often get asked in sentences, but if we comine for example in the song juanes 
+
+Imagine a song laike juanges tengo la camisa negra 
+FIRST POV could be a person looking the mirror , so is like  me puedo ver  tengo la camisa negra
+Then has to be a guy in a black shirt, él tiene la camisa negra 
+Then a she, then them
+Then present and past tense.
+The quiz are going to be that user gets a question in english with the image , and then they have to say it in spanish into the command promopt ",
+,,,,,,
+,,,,,,
+,,,,,,
+,,,,,,
+,,Always open ,,What about the minigames?,"i want to make possible to have minigames with the words sentences
+i want to make a whole brainstore session to know which games and how the user can access it
+and the formats since at the moment i do know i want things for SMS , and for email, but that is the delivery channels. we could have a mingame hub in the website always a accesible and customizable for any song lyrics since we already have a processor of spotify link into , lyrics, into word classifcation",

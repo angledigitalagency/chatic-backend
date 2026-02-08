@@ -1,0 +1,12 @@
+spotipy
+lyricsgenius
+spacy
+python-dotenv
+beautifulsoup4
+requests
+gspread
+twilio
+flask
+stripe
+pyspellchecker
+gunicorn
