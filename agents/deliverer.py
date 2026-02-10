@@ -39,8 +39,16 @@ class Deliverer:
         Sends an email using the configured SMTP server and identity.
         """
         if not all([self.smtp_server, self.smtp_port, self.username, self.password]):
+            # Check if Resend is available as an alternative
+            if os.getenv('RESEND_API_KEY'):
+                return self._send_via_resend(recipient, subject, body_html)
+            
             print(f"Error: SMTP configuration missing for identity '{self.identity}'. Check .env variables.")
             return False
+
+        # Attempt Resend First for Fluency (if configured)
+        if self.identity == "fluency" and os.getenv('RESEND_API_KEY'):
+             return self._send_via_resend(recipient, subject, body_html)
 
         try:
             msg = MIMEMultipart("alternative")
@@ -64,7 +72,7 @@ class Deliverer:
                 server.login(self.username, self.password)
                 server.sendmail(self.username, recipient, msg.as_string())
             
-            print(f"Email sent successfully to {recipient}")
+            print(f"Email sent successfully to {recipient} (SMTP)")
             return True
 
         except Exception as e:
@@ -220,4 +228,30 @@ class Deliverer:
             return True
         except Exception as e:
             print(f"Failed to send SMS: {e}")
+            return False
+
+    def _send_via_resend(self, recipient, subject, html_content):
+        """
+        Internal helper to send via Resend API.
+        """
+        try:
+            import resend
+            resend.api_key = os.getenv('RESEND_API_KEY')
+            
+            print(f"📧 Sending via Resend to {recipient}...")
+
+            params = {
+                # Use Verified Domain. Fallback to onboarding@fluencyradio.com if not set? 
+                # Ideally, this should be dynamic, but for now we hardcode the verified one.
+                "from": "Fluency Radio <onboarding@fluencyradio.com>", 
+                "to": [recipient],
+                "subject": subject,
+                "html": html_content,
+            }
+
+            email = resend.Emails.send(params)
+            print(f"✅ Resend Email Sent! ID: {email.get('id')}")
+            return True
+        except Exception as e:
+            print(f"❌ Resend Failure: {e}")
             return False
