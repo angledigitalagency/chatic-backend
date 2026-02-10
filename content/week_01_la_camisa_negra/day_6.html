@@ -1,0 +1,113 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+             <style>
+                @import url('https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700;900&family=Helvetica+Neue:wght@400;700&display=swap');
+                body { margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+                .section { margin-bottom: 30px; padding: 25px; border: 1px solid #000; border-radius: 20px; background: transparent; }
+                .label { text-transform: uppercase; font-size: 14px; font-weight: 900; letter-spacing: 1px; color: #000; margin-bottom: 5px; display: block; }
+                .melody-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; display: block; color: #333; }
+                .challenge-box { background: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #000; margin-bottom: 15px; font-size: 16px; color: #333; }
+                .scenario { display: block; margin-bottom: 15px; font-size: 16px; color: #555; line-height: 1.4; }
+                .prompt { font-weight: bold; display: block; margin-bottom: 5px; font-size: 18px; color: #000; }
+                 /* Use details/summary for clickable reveal */
+                details { margin-top: 10px; cursor: pointer; }
+                summary { font-weight: bold; color: #999; list-style: none; outline: none; }
+                summary::-webkit-details-marker { display: none; } /* Hide default arrow */
+                details[open] summary { display: none; } /* Hide summary when open */
+                .answer { font-size: 18px; font-weight: bold; color: #000; margin-top: 5px; display: block; animation: openDetails 0.2s ease-in-out; }
+                @keyframes openDetails { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+            </style>
+        </head>
+        <body style="background-color: #f5f5f5; margin: 0; padding: 40px 10px; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 40px 40px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                
+                <!-- HEADER -->
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <h1 style="font-size: 32px; font-weight: 900; letter-spacing: -1px; margin: 0; color: #000; text-transform: uppercase;">Review</h1>
+                    <p style="color: #666; font-size: 14px; margin-top: 5px; text-transform: uppercase; letter-spacing: 2px;">The Rhythm of Existence</p>
+                </div>
+
+                <!-- INSTRUCTION -->
+                <div style="text-align: center; font-size: 16px; margin-bottom: 40px; color: #333; line-height: 1.6;">
+                    This week we discovered the Melodies of Spanish in <strong>La Camisa Negra</strong>.<br><br>
+                    <strong>Challenge:</strong> Read the scenario, speak your answer, then tap to reveal.
+                </div>
+
+                <!-- 1. POSSESSION SCENARIOS -->
+                <div class="section">
+                    <span class="label">PHASE 1</span>
+                    <span class="melody-title">Melody of Possession (Tener)</span>
+                    
+                    <div class="challenge-box">
+                        <span class="scenario">You are in a car with a friend.<br>Ask him if he has the soda.</span>
+                        <details>
+                            <summary>Tap to Reveals Answer</summary>
+                            <span class="answer">¿Tienes el refresco?</span>
+                        </details>
+                    </div>
+                     <div class="challenge-box">
+                        <span class="scenario">You are meeting someone new.<br>Tell them you have a house in the United States.</span>
+                         <details>
+                            <summary>Tap to Reveal Answer</summary>
+                            <span class="answer">Tengo una casa en los Estados Unidos.</span>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- 2. MOVEMENT SCENARIOS -->
+                <div class="section">
+                    <span class="label">PHASE 2</span>
+                    <span class="melody-title">Melody of Movement (Ir)</span>
+                     <div class="challenge-box">
+                        <span class="scenario">You are leaving work.<br>Tell your colleague you are going to the office.</span>
+                         <details>
+                            <summary>Tap to Reveal Answer</summary>
+                            <span class="answer">Voy a la oficina.</span>
+                        </details>
+                    </div>
+                    <div class="challenge-box">
+                        <span class="scenario">You are hungry.<br>Tell your friend you are going to eat pizza.</span>
+                        <details>
+                            <summary>Tap to Reveal Answer</summary>
+                            <span class="answer">Voy a comer pizza.</span>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- 3. IDENTITY/MOOD SCENARIOS -->
+                <div class="section">
+                    <span class="label">PHASE 3</span>
+                    <span class="melody-title">Melody of Mood (Estar)</span>
+                     <div class="challenge-box">
+                        <span class="scenario">You see a friend looking down.<br>Ask him if he is sad.</span>
+                        <details>
+                            <summary>Tap to Reveal Answer</summary>
+                            <span class="answer">¿Estás triste?</span>
+                        </details>
+                    </div>
+                     <div class="challenge-box">
+                        <span class="scenario">Someone asks how you are.<br>Tell them you are busy right now.</span>
+                        <details>
+                            <summary>Tap to Reveal Answer</summary>
+                            <span class="answer">Estoy ocupado ahora.</span>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                 <div style="text-align: center; margin-top: 50px;">
+                    <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Want to track your progress?</p>
+                    <a href="https://ifeelsochatty.com/minigames/boss_fight.html" 
+                       style="background-color: #000; color: #fff; padding: 18px 40px; border-radius: 40px; text-decoration: none; font-weight: 900; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                        🎙️ ENTER INTERACTIVE SIMULATOR
+                    </a>
+                </div>
+
+            </div>
+        </body>
+        </html>
+        

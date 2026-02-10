@@ -34,6 +34,7 @@ class DataFetcher:
             # OpenAI Graph Tags are usually reliable
             og_title_tag = soup.find("meta", property="og:title")
             og_desc_tag = soup.find("meta", property="og:description")
+            og_image_tag = soup.find("meta", property="og:image")
             
             if not og_title_tag:
                 print("Could not find Title in OG tags.")
@@ -52,10 +53,14 @@ class DataFetcher:
                 if len(parts) > 0:
                     artist = parts[0].strip()
             
+            # Extract Image URL
+            image_url = og_image_tag["content"] if og_image_tag else None
+            
             return {
                 "artist": artist,
                 "title": title,
-                "external_url": track_url
+                "external_url": track_url,
+                "image_url": image_url
             }
 
         except Exception as e:

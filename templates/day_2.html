@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700;900&family=Helvetica+Neue:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body style="background-color: #f5f5f5; margin: 0; padding: 40px 10px; color: #333;">
+
+    <div
+        style="max-width: 600px; margin: 0 auto; background-color: white; padding: 40px 40px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+
+        <!-- SPOTIFY DARK CARD -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%"
+            style="background-color: #121212; border-radius: 8px; overflow: hidden; max-width: 500px; margin: 0 auto 40px auto; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+            <tr>
+                <td style="padding: 20px 25px; vertical-align: middle;">
+                    <div
+                        style="font-family: 'Helvetica Neue', Helvetica, sans-serif; color: #ffffff; font-size: 18px; font-weight: bold; margin-bottom: 4px; text-decoration: none;">
+                        <a href="{{ play_link }}" target="_blank" style="color: white; text-decoration: none;">{{
+                            song_title }}</a>
+                    </div>
+                    <div
+                        style="font-family: 'Helvetica Neue', Helvetica, sans-serif; color: #b3b3b3; font-size: 13px; font-weight: 400;">
+                        Song • {{ artist }}
+                    </div>
+                </td>
+                <td width="60" align="right" style="padding: 20px 25px; vertical-align: middle;">
+                    <a href="{{ play_link }}" target="_blank"
+                        style="display: block; width: 48px; height: 48px; background-color: #1DB954; border-radius: 50%; line-height: 48px; text-align: center; text-decoration: none;">
+                        <span
+                            style="color: black; font-size: 24px; display: inline-block; padding-left: 4px;">&#9658;</span>
+                    </a>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Content Stack -->
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;">
+            <p
+                style="font-size: 14px; margin-bottom: 40px; color: #666; font-style: italic; text-align: center; line-height: 1.6;">
+                These verbs are the <strong>Melodies of Existence</strong>. They command how we express Being, State,
+                Possession, Desire, and Ability. Listen to how they change the meaning of the song.
+            </p>
+
+            <!-- Melody 1 (Mood / Estar) Block -->
+            <div
+                style="margin-bottom: 60px; padding: 25px; background-color: transparent; border: 1px solid #000; border-radius: 20px;">
+                <h3
+                    style="margin-top: 0; color: #000; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; margin-bottom: 15px;">
+                    Melody of the Mood
+                </h3>
+
+                <!-- Meaning -->
+                <p style="color: #000; font-size: 16px; margin-bottom: 25px; line-height: 1.5;">
+                    (Emotional State) → (<strong>Estar</strong>)<br>
+                    How you feel now / how you were feeling before
+                </p>
+
+                <!-- INJECTED EXAMPLE -->
+                <div style="padding: 10px 0; margin-bottom: 25px;">
+                    <h4
+                        style="color: #000; font-size: 14px; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;">
+                        From {{ song_title }}:</h4>
+
+                    <div style="margin-bottom: 20px;">
+                        <!-- We assume these variables are passed in. If missing, we should handle gracefully or ensure data exists. -->
+                        {% if melody_1 %}
+                        <p
+                            style="margin: 0; color: #000; font-size: 18px; font-weight: 400; line-height: 1.4; margin-bottom: 2px;">
+                            • {{ melody_1.meaning }}</p>
+                        <p
+                            style="margin: 0; color: #000; font-size: 18px; font-weight: 400; line-height: 1.4; font-style: italic; margin-bottom: 5px;">
+                            {{ melody_1.translation }}</p>
+                        <div
+                            style="margin: 0; color: #000; font-size: 20px; font-weight: 400; font-style: normal; line-height: 1.4; background-color: transparent;">
+                            {{ melody_1.original }}
+                        </div>
+                        {% else %}
+                        <p><em>Example loading...</em></p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Concept -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">This Melody sings:</p>
+                <div
+                    style="color: #000; font-size: 15px; margin-top: 0; margin-bottom: 25px; line-height: 1.6; font-style: italic;">
+                    How do I feel? What emotion fills me?<br>
+                    <strong>I am (Estoy)</strong> __________________ (emotion)
+                </div>
+
+                <!-- Formulas -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">Formulas (Speech
+                    Engineering):</p>
+                <ul
+                    style="color: #000; font-size: 15px; margin-top: 0; padding-left: 20px; margin-bottom: 25px; line-height: 1.6;">
+                    <li>To say how you feel now: <strong>(Estoy) + (Emotion)</strong><br><em style="color:#555;">Estoy
+                            feliz / Estoy triste</em></li>
+                    <li>To say the cause: <strong>(Estoy) + (De) + (Reason)</strong><br><em style="color:#555;">Estoy de
+                            luto</em></li>
+                </ul>
+
+                <!-- Verb Tense -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">Verb Tense:</p>
+                <div
+                    style="color: #000; font-size: 15px; margin-top: 0; margin-bottom: 25px; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center;">
+                    <span style="color: #777;">Past</span> ← <strong>Estar</strong> → <span
+                        style="color: #777;">Future</span><br>
+                    <span style="font-weight: 500;">Estaba</span> ← <strong>Estoy</strong> → <span
+                        style="font-weight: 500;">Estaré</span>
+                </div>
+
+                <!-- Prepositions -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">Prepositions for this
+                    Melody:</p>
+                <p style="color: #000; font-size: 15px; margin-top: 0; margin-bottom: 20px;">→ <strong>CON</strong>
+                    (carrying emotion) / <strong>DE</strong> (cause) / <strong>EN</strong> (where emotion is)</p>
+
+                <!-- Key Reminder -->
+                <div style="background-color: #f0f0f0; padding: 15px; border-radius: 10px;">
+                    <p style="color: #000; font-size: 14px; margin: 0; font-weight: bold;">Key Reminder:</p>
+                    <p style="color: #000; font-size: 14px; margin: 5px 0 0 0;">Emotions flow and change like waves. Use
+                        <strong>Estar</strong>, not Ser.</p>
+                </div>
+            </div>
+
+            <!-- Melody 2 (Possession / Tener) Block -->
+            <div
+                style="margin-bottom: 60px; padding: 25px; background-color: transparent; border: 1px solid #000; border-radius: 20px;">
+                <h3
+                    style="margin-top: 0; color: #000; font-size: 20px; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; margin-bottom: 15px;">
+                    Melody of Possession
+                </h3>
+
+                <!-- Meaning -->
+                <p style="color: #000; font-size: 16px; margin-bottom: 25px; line-height: 1.5;">
+                    (Having in Reach / Belonging) → (<strong>Tener</strong>)<br>
+                    What you have / what’s available to you
+                </p>
+
+                <!-- INJECTED EXAMPLES (No Borders) -->
+                <div style="padding: 10px 0; margin-bottom: 25px;">
+                    <h4
+                        style="color: #000; font-size: 14px; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px;">
+                        From {{ song_title }}:</h4>
+
+                    <div style="margin-bottom: 20px;">
+                        {% if melody_2 %}
+                        <p
+                            style="margin: 0; color: #000; font-size: 18px; font-weight: 400; line-height: 1.4; margin-bottom: 2px;">
+                            • {{ melody_2.meaning }}</p>
+                        <p
+                            style="margin: 0; color: #000; font-size: 18px; font-weight: 400; line-height: 1.4; font-style: italic; margin-bottom: 5px;">
+                            {{ melody_2.translation }}</p>
+                        <div
+                            style="margin: 0; color: #000; font-size: 20px; font-weight: 400; font-style: normal; line-height: 1.4; background-color: transparent;">
+                            {{ melody_2.original }}
+                        </div>
+                        {% else %}
+                        <p><em>Example loading...</em></p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Concept -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">This Melody sings:</p>
+                <div
+                    style="color: #000; font-size: 15px; margin-top: 0; margin-bottom: 25px; line-height: 1.6; font-style: italic;">
+                    What do I have? Do I have it? Is it with me?<br>
+                    <strong>I have (Yo tengo)</strong> __________________ (object / thing / time / resource)
+                </div>
+
+                <!-- Formulas -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">Formulas (Speech
+                    Engineering):</p>
+                <ul
+                    style="color: #000; font-size: 15px; margin-top: 0; padding-left: 20px; margin-bottom: 25px; line-height: 1.6;">
+                    <li>To say what you have: <strong>(Tengo) + (Thing)</strong><br><em style="color:#555;">Tengo las
+                            llaves / Tengo tiempo</em></li>
+                    <li>To say possession/origin: <strong>(Es) + (De) + (Thing/Owner)</strong><br><em
+                            style="color:#555;">Es mío / Es de mi mamá</em></li>
+                </ul>
+
+                <!-- Verb Tense -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">Verb Tense:</p>
+                <div
+                    style="color: #000; font-size: 15px; margin-top: 0; margin-bottom: 25px; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center;">
+                    <span style="color: #777;">Past</span> ← <strong>Tener</strong> → <span
+                        style="color: #777;">Future</span><br>
+                    <span style="font-weight: 500;">Tenía</span> ← <strong>Tengo</strong> → <span
+                        style="font-weight: 500;">Tendré</span>
+                </div>
+
+                <!-- Prepositions -->
+                <p style="color: #000; font-size: 15px; margin-bottom: 8px; font-weight: bold;">Prepositions for this
+                    Melody:</p>
+                <p style="color: #000; font-size: 15px; margin-top: 0; margin-bottom: 20px;">→ No preposition needed
+                    before the noun<br>→ <strong>DE</strong> = possession / what something is of</p>
+
+                <!-- Key Reminder -->
+                <div style="background-color: #f0f0f0; padding: 15px; border-radius: 10px;">
+                    <p style="color: #000; font-size: 14px; margin: 0; font-weight: bold;">Key Reminder — don’t say this
+                        / say this instead:</p>
+                    <p style="color: #000; font-size: 14px; margin: 5px 0 0 0;">❌ Estoy un coche → ✅
+                        <strong>Tengo</strong> un coche<br>❌ Soy hambre → ✅ <strong>Tengo</strong> hambre</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #eee; padding-top: 30px;">
+            <div style="display: inline-block;">
+                <a href="https://ifeelsochatty.com/minigames/article_game.html?song={{ song_title|urlencode }}"
+                    style="display: inline-block; background-color: #333; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; margin: 0 10px; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    🎲 Play: El vs La
+                </a>
+            </div>
+            <div style="display: inline-block;">
+                <a href="https://ifeelsochatty.com/flashcards?song={{ song_title|urlencode }}"
+                    style="display: inline-block; color: #333; text-decoration: none; font-weight: bold; margin: 0 15px; font-size: 13px; border-bottom: 1px solid #333;">
+                    Review Vocabulary
+                </a>
+            </div>
+        </div>
+
+        <!-- Legal -->
+        <p style="text-align: center; color: #ccc; font-size: 10px; margin-top: 30px;">
+            Song references are used solely for educational listening purposes. Lyrics are not reproduced.
+        </p>
+    </div>
+</body>
+
+</html>

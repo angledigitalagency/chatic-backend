@@ -14,9 +14,8 @@ class Linguist:
 
         # Level 1 Target Verbs
         self.TARGET_VERBS = {
-            "ser", "estar", "tener", "hacer", "poder", "decir", "ir", "ver", 
             "saber", "querer", "dar", "llegar", "pasar", "poner", "parecer", 
-            "creer", "hablar", "comer", "vivir", "tomar", "trabajar"
+            "creer", "hablar", "comer", "vivir", "tomar", "trabajar", "sentir"
         }
         
         # Dictionary for Validation
@@ -94,6 +93,147 @@ class Linguist:
                 
         return True, "Safe"
 
+
+    def generate_reverse_qa(self, sentence, verb_lemma, verb_token):
+        """
+        Generates a 'Natural' Question for a given sentence and target verb.
+        Uses context-aware heuristics (e.g. 'ir a' = future) and template fallbacks.
+        """
+        s_lower = sentence.lower()
+        
+        # 1. CONTEXT AWARE HEURISTICS (Specific Usages)
+        
+        # IR (Movement vs Future)
+        if verb_lemma == "ir":
+            # Check for "ir a + infinitive" pattern (Future)
+            # Simple check: "va a", "voy a", "vas a", "van a", "vamos a" followed by word
+            if re.search(r'\b(voy|vas|va|vamos|van)\s+a\s+\w+', s_lower):
+                 return { "question_en": "What is going to happen?", "question_es": "¿Qué va a pasar?" }
+            # Check for reflexive "irse" (leaving)
+            if any(w in s_lower for w in ["me voy", "te vas", "se va", "nos vamos", "se van"]):
+                 return { "question_en": "Who is leaving?", "question_es": "¿Quién se va?" }
+            # Default: Movement
+            return { "question_en": "Where is the movement going?", "question_es": "¿Hacia dónde va el movimiento?" }
+
+        # TENER (Possession vs Obligation vs Idioms)
+        if verb_lemma == "tener":
+            # Obligation (Tener que)
+            if "que" in s_lower and re.search(r'\btienes?\s+que', s_lower):
+                return { "question_en": "What is necessary to do?", "question_es": "¿Qué se tiene que hacer?" }
+            # Idioms (Miedo, Ganas, Culpa, Razón)
+            if "ganas" in s_lower:
+                return { "question_en": "What is the desire?", "question_es": "¿De qué tienes ganas?" }
+            if "miedo" in s_lower:
+                return { "question_en": "What is the fear?", "question_es": "¿De qué tienes miedo?" }
+            if "culpa" in s_lower:
+                return { "question_en": "Who has the blame?", "question_es": "¿Quién tiene la culpa?" }
+            # Default: Possession
+            return { "question_en": "What is being had/possessed?", "question_es": "¿Qué se tiene?" }
+
+        # DAR (Giving vs Idioms)
+        if verb_lemma == "dar":
+            # Dar la gana
+            if "gana" in s_lower:
+                 return { "question_en": "What does the soul want?", "question_es": "¿Qué te da la gana?" }
+            # Dar cuenta
+            if "cuenta" in s_lower:
+                 return { "question_en": "What is being realized?", "question_es": "¿De qué se da cuenta?" }
+            # Default: Giving
+            return { "question_en": "What is being given?", "question_es": "¿Qué se da?" }
+
+        # QUERER (Wanting vs Loving)
+        if verb_lemma == "querer":
+            if any(w in s_lower for w in ["te", "me", "lo", "la"]) and "mas" not in s_lower: 
+                # Heuristic: Object pronoun usually implies loving a person in songs, unless "mas" (want more)
+                return { "question_en": "Who is loved?", "question_es": "¿A quién se quiere?" }
+            return { "question_en": "What is wanted?", "question_es": "¿Qué se quiere?" }
+
+        # 2. DEPENDENCY-BASED GENERATION (Dynamic & Specific)
+        # Check if we have a valid Spacy token to work with
+        if verb_token and hasattr(verb_token, 'children'):
+            # Find Direct Object (What?)
+            dobj = next((t for t in verb_token.children if t.dep_ in ['dobj', 'obj']), None)
+            # Find Subject (Who?)
+            nsubj = next((t for t in verb_token.children if t.dep_ in ['nsubj', 'nsubj:pass']), None)
+            # Find Prepositional Object (Where/How?) -- complicated, simplifying
+            
+            # Case A: Transitive Verb with Object (e.g. "Tengo la camisa")
+            if dobj:
+                # "What do I have?" -> "¿Qué tengo?"
+                # We need to construct the Spanish Q based on the verb form.
+                # This is hard without a conjugator. 
+                # BUT we can format it: "¿Qué [verb]?" + (optionally) subject?
+                
+                # Heuristic: If it has a direct object, ask "What [verb]...?"
+                # "Que tengo?" "Que quiero?" "Que perdi?"
+                
+                # We need to be careful with Pronouns ("Lo quiero").
+                if dobj.pos_ == "PRON":
+                    return { 
+                        "question_en": f"What/Who is {verb_lemma} referring to?", 
+                        "question_es": f"¿A qué/quién se refiere '{dobj.text}'?" 
+                    }
+                
+                # Simple Subject Inference for English
+                subject_en = "he/she/it"
+                aux_en = "does"
+                
+                v_text = verb_token.text.lower()
+                if v_text.endswith('o') and not v_text in ['dijo', 'hizo']: # rough check
+                    subject_en = "I"
+                    aux_en = "do"
+                elif v_text.endswith('as') or v_text.endswith('es'):
+                    subject_en = "you"
+                    aux_en = "do"
+                elif v_text.endswith('mos'):
+                    subject_en = "we"
+                    aux_en = "do"
+                elif v_text.endswith('an') or v_text.endswith('en'):
+                    subject_en = "they"
+                    aux_en = "do"
+                
+                # Check explicit nsubj
+                if nsubj and nsubj.pos_ in ['PRON', 'PROPN', 'NOUN']:
+                    if nsubj.text.lower() in ['yo']: subject_en = "I"; aux_en = "do"
+                    elif nsubj.text.lower() in ['tu', 'tú']: subject_en = "you"; aux_en = "do"
+                    # else keep he/she/it or use noun? "What does the soul have?"
+                
+                return {
+                    "question_en": f"What {aux_en} {subject_en} {verb_lemma}?", 
+                    "question_es": f"¿Qué {verb_token.text}?" 
+                }
+        
+        # 3. GENERIC CONCEPT TEMPLATES (Fallback)
+        concept_questions = {
+            "hacer": ("What is being done?", "¿Qué se está haciendo?"),
+            "decir": ("What is being said?", "¿Qué se dice?"),
+            "ver": ("What is being seen?", "¿Qué se ve?"),
+            "saber": ("What is known?", "¿Qué se sabe?"),
+            "llegar": ("Who or what arrives?", "¿Quién o qué llega?"),
+            "pasar": ("What is happening?", "¿Qué pasa?"),
+            "vivir": ("How is life lived?", "¿Cómo se vive?"),
+            "tomar": ("What is being taken/drunk?", "¿Qué se toma?"),
+            "sentir": ("What is the feeling?", "¿Qué se siente?"),
+            "trabajar": ("What is the work?", "¿En qué se trabaja?"),
+            "comer": ("What is being eaten?", "¿Qué se come?"),
+            "hablar": ("What is being spoken about?", "¿De qué se habla?"),
+            "poner": ("What is being placed?", "¿Qué se pone?"),
+            "poder": ("What is possible?", "¿Qué se puede hacer?"),
+        }
+
+        if verb_lemma in concept_questions:
+            return {
+                "question_en": concept_questions[verb_lemma][0],
+                "question_es": concept_questions[verb_lemma][1]
+            }
+
+        # 3. ABSOLUTE FALLBACK
+        return {
+            "question_en": f"What is the action of {verb_lemma}?",
+            "question_es": f"¿Cuál es la acción de {verb_lemma}?"
+        }
+
+
     def analyze_lyrics(self, lyrics):
         """
         Analyzes lyrics to produce a reference sheet, valid sentences, and Level 1 verb mapping.
@@ -135,6 +275,23 @@ class Linguist:
                     # Add to Standard Categories
                     if pos in ['NOUN', 'PROPN']:
                         reference_sheet['Nouns'].add(lemma)
+                        
+                        # --- ARTICLE GAME DATA ---
+                        # Get Gender (Fem/Masc)
+                        gender = token.morph.get("Gender")
+                        if gender:
+                            article = "La" if "Fem" in gender else "El"
+                            # Store unique capitalized nouns with their article
+                            noun_display = token.text.capitalize()
+                            # Avoid duplicates by checking if we have this noun already (basic check)
+                            # Actually, let's store it in a dict to dedupe
+                            if "article_game_data" not in reference_sheet:
+                                reference_sheet["article_game_data"] = {}
+                            
+                            # Simple heuristics to avoid bad ones
+                            if len(noun_display) > 2 and word_text not in self.BLOCKLIST:
+                                reference_sheet["article_game_data"][noun_display] = article
+
                     elif pos == 'VERB':
                         reference_sheet['Verbs'].add(lemma)
                     elif pos == 'ADJ':
@@ -149,15 +306,19 @@ class Linguist:
                     if len(word_text) > 2 and word_text.isalpha():
                         reference_sheet['Slang_Candidates'].add(word_text) # Keep original text for slang, not lemma (often lemma is wrong for slang)
 
-        final_sheet = {k: sorted(list(v)) for k, v in reference_sheet.items()}
-
-        final_sheet = {k: sorted(list(v)) for k, v in reference_sheet.items()}
+        final_sheet = {}
+        for k, v in reference_sheet.items():
+            if k == "article_game_data":
+                final_sheet[k] = v # Keep as dict
+            else:
+                final_sheet[k] = sorted(list(v))
 
         # 2. Sentence Evaluation & Verb Mapping
         lines = [line.strip() for line in cleaned_text.split('\n') if line.strip()]
         
         candidates = []
         verb_sentence_map = defaultdict(list)
+        prep_sentence_map = defaultdict(list)
 
         for line in lines:
             word_count = len(line.split())
@@ -165,10 +326,12 @@ class Linguist:
             
             doc = self.nlp(line)
             
-            # Check for Target Verbs in this specific line
+            # Check for Target Verbs & Prepositions in this specific line
             line_has_target = False
             for token in doc:
-                if token.pos_ == "VERB" and token.lemma_.lower() in self.TARGET_VERBS:
+                # A. VERBS
+                # Include AUX for ser/estar
+                if (token.pos_ == "VERB" or token.pos_ == "AUX") and token.lemma_.lower() in self.TARGET_VERBS:
                     # Found a level 1 verb!
                     
                     # 1. Extract Tense/Form
@@ -199,12 +362,48 @@ class Linguist:
                             "sentence": line,
                             "tense": tense_str,
                             "difficulty": difficulty,
-                            "conjugated": token.text, # Store exact form (e.g. "tengo")
+                            "conjugated": token.text,
+                            "lemma": token.lemma_.lower(),
                             "is_safe": is_safe,
-                            "safety_reason": reason
+                            "safety_reason": reason,
+                            "aux_context": None
                         }
+                        
+                        # 1. Check HEAD (e.g. "Quiero comer" -> comer.head = quiero)
+                        if token.head.pos_ in ['VERB', 'AUX'] and token.head != token:
+                             entry["aux_context"] = token.head.lemma_.lower()
+                        
+                        # 2. Check CHILDREN (e.g. "Puedo comer" -> comer.children = [puedo])
+                        # This overrides HEAD if found (as direct aux is usually tighter context)
+                        for child in token.children:
+                            if child.dep_ in ['aux', 'aux:pass'] and child.pos_ in ['VERB', 'AUX']:
+                                entry["aux_context"] = child.lemma_.lower()
+                                break
+                        
+                        # Generate Reverse Q&A for Day 3/4 content
+                        qa_entry = self.generate_reverse_qa(line, token.lemma_.lower(), token)
+                        if isinstance(qa_entry, dict):
+                            entry["question_es"] = qa_entry.get("question_es")
+                            entry["question_en"] = qa_entry.get("question_en")
+                        else:
+                            entry["question_es"] = qa_entry
+                            entry["question_en"] = None
+                        
                         verb_sentence_map[token.lemma_.lower()].append(entry)
                         line_has_target = True
+
+                # B. PREPOSITIONS
+                elif token.pos_ == "ADP":
+                    # Simple extraction for Day 4
+                    is_safe, reason = self.check_safety(doc)
+                    if is_safe and word_count <= 20:
+                        entry = {
+                            "sentence": line,
+                            "lemma": token.lemma_.lower(),
+                            "text": token.text,
+                            "is_safe": is_safe
+                        }
+                        prep_sentence_map[token.lemma_.lower()].append(entry)
             
             # General Candidate Selection (must have verb)
             has_verb = any(token.pos_ == "VERB" for token in doc)
@@ -262,6 +461,6 @@ class Linguist:
         return {
             "reference_sheet": final_sheet,
             "top_sentences": top_sentences,
-            "verb_sentence_map": dict(verb_sentence_map)
+            "verb_sentence_map": dict(verb_sentence_map),
+            "prep_sentence_map": dict(prep_sentence_map)
         }
-

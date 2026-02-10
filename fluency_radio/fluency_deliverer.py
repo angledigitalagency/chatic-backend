@@ -84,4 +84,4 @@ class FluencyDeliverer:
         Sends the weekly song guide (Song of the Week).
         Wraps the shared Deliverer's method.
         """
-        return self.deliverer.send_welcome_email(recipient, track_info, guide_data)
+        return self.deliverer.send_song_guide(recipient, track_info, guide_data)

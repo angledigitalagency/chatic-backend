@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluency Radio - Game Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700;900&family=Helvetica+Neue:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Circular Std', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #1DB954;
+            margin-top: 40px;
+            font-size: 32px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .game-card {
+            background-color: #282828;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: transform 0.2s, background-color 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #333;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            background-color: #333;
+            border-color: #1DB954;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .desc {
+            font-size: 14px;
+            color: #b3b3b3;
+            line-height: 1.4;
+        }
+
+        .badge {
+            background-color: #1DB954;
+            color: black;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Game Portal 🎮</h1>
+    <p style="color: #b3b3b3;">Practice output and speed up your fluency.</p>
+
+    <div class="container">
+        <!-- Article Game -->
+        <a href="article_game.html" class="game-card">
+            <div class="icon">🎲</div>
+            <div class="title">El vs La</div>
+            <div class="desc">Master noun genders. Speak the full phrase to score points.</div>
+            <div class="badge">NEW</div>
+        </a>
+
+        <!-- Flashcards -->
+        <a href="flashcards.html" class="game-card">
+            <div class="icon">🎴</div>
+            <div class="title">Flashcards</div>
+            <div class="desc">Review vocabulary terms. Flip, test, and track your retention.</div>
+        </a>
+    </div>
+
+</body>
+
+</html>

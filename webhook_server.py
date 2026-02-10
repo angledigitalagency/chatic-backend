@@ -18,6 +18,14 @@ stripe.api_key = os.getenv("STRIPE_API_KEY")
 # Check for STRIPE_ENDPOINT_SECRET (Production/Render) first, then STRIPE_WEBHOOK_SECRET (Local)
 endpoint_secret = os.getenv("STRIPE_ENDPOINT_SECRET") or os.getenv("STRIPE_WEBHOOK_SECRET")
 
+@app.route('/')
+def home():
+    try:
+        with open('landing.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "Landing page not found", 404
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     payload = request.get_data()
@@ -125,9 +133,12 @@ def handle_checkout_session(session):
                             print("❌ Failed to send Fluency Radio Welcome Email.")
                     else:
                         print(f"📧 Triggering Chatic Welcome for {email}...")
-                        # Existing logic for Chatic welcome...
-                        print(f"✨ Registered iFeelSoChatty user: {email}. No immediate welcome flow defined for generic Chatic yet.")
-                        pass 
+                        chatic_deliverer = Deliverer(identity="chatic")
+                        success = chatic_deliverer.send_welcome_email(email, name)
+                        if success:
+                            print("✅ Chatic Welcome Email Sent!")
+                        else:
+                            print("❌ Failed to send Chatic Welcome Email.") 
                 except Exception as e:
                     print(f"❌ Email sending failed: {e}")
 
@@ -136,8 +147,39 @@ def handle_checkout_session(session):
         else:
             print(f"✨ User {customer_email} already exists. No welcome email sent.")
 
+        # 4. Trigger Test Sequence (if applicable)
+        if source == 'fluency_test':
+            print(f"🧪 Test Source Detected! Launching 'Fast Forward' Email Stream...")
+            import threading
+            test_thread = threading.Thread(target=run_test_sequence, args=(customer_email, customer_name))
+            test_thread.start()
+
+
     else:
         print("⚠️ Payment received but no email found.")
+
+def run_test_sequence(email, name):
+    """
+    Test Mode: Sends Day 1-7 content sequentially, 1 minute apart.
+    """
+    import time
+    from send_daily_interactions import send_content_for_day
+    
+    print(f"🧪 STARING TEST SEQUENCE for {email}...")
+    
+    # Day 0 (Welcome) is already sent by main logic.
+    # Start Day 1 after 60s
+    for day in range(1, 8): # 1 to 7
+        print(f"⏳ Waiting 60s before sending Day {day}...")
+        time.sleep(60)
+        
+        # Hardcode Week 1 for test
+        print(f"🚀 Sending Day {day} (Test Mode)...")
+        send_content_for_day(email, 1, day)
+        
+    print(f"✅ TEST SEQUENCE COMPLETE for {email}")
+
+
 
 def handle_payment_intent(intent):
     """
@@ -236,6 +278,35 @@ def trigger_fluency_welcome(email, name):
     except Exception as e:
         print(f"❌ Error in Fluency Radio logic: {e}")
 
+@app.route('/api/log-practice', methods=['POST'])
+def log_practice():
+    """
+    Receives practice metrics from Mini-Games (Frontend).
+    Payload: {
+        "email": "user@example.com",
+        "activity_type": "flashcards",
+        "details": { "song_title": "...", "time": 120, "score": ... }
+    }
+    """
+    try:
+        data = request.json
+        email = data.get('email')
+        activity_type = data.get('activity_type', 'unknown_game')
+        details = data.get('details', {})
+        
+        if not email:
+            return jsonify({'status': 'error', 'message': 'Email required'}), 400
+            
+        # Log to Storage
+        storage_client = Storage(product="fluency") # Use Fluency product context
+        storage_client.log_activity(email, activity_type, details)
+        
+        return jsonify({'status': 'success', 'message': 'Activity logged'}), 200
+        
+    except Exception as e:
+        print(f"Error in log_practice: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4242))
-    app.run(port=port)
+    app.run(host='0.0.0.0', port=port)

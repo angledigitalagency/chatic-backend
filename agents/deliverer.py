@@ -68,10 +68,12 @@ class Deliverer:
             return True
 
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            print(f"Failed to send email to {recipient}: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
-    def send_welcome_email(self, recipient, track_info, guide_data):
+    def send_song_guide(self, recipient, track_info, guide_data):
         """
         Formats and sends the welcome email with Spotify link and Fluency Guide.
         Replaces full lyrics with a copyright-compliant summary.
@@ -160,6 +162,40 @@ class Deliverer:
         """
 
         return self.send_email(recipient, subject, html_content, text_content)
+
+    def send_welcome_email(self, recipient, name="Student"):
+        """
+        Sends a generic welcome email for Chatic (non-Fluency) users.
+        """
+        subject = "Welcome to I Feel So Chatty! 🎉"
+        
+        body_html = f"""
+        <html>
+        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                <h1 style="color: #2c3e50; text-align: center;">Welcome to I Feel So Chatty! 💬</h1>
+                <p>Hi {name},</p>
+                <p>Thanks for joining us! We're excited to help you on your language learning journey.</p>
+                
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                
+                <h3>🚀 What's Next?</h3>
+                <p>Our team is reviewing your profile and will be in touch shortly with your personalized plan.</p>
+                
+                <p style="text-align: center;">
+                    <a href="https://ifeelsochatty.com" style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Visit Our Website</a>
+                </p>
+                
+                <p style="margin-top: 30px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
+                    Happy Chatting,<br>
+                    The I Feel So Chatty Team
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return self.send_email(recipient, subject, body_html)
 
     def send_sms(self, to_number, body):
         """

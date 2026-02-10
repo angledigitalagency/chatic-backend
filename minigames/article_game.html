@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluency Radio - Article Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700;900&family=Helvetica+Neue:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Circular Std', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1DB954;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 16px;
+            color: #b3b3b3;
+            font-weight: 400;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .game-container {
+            background-color: #282828;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .noun-display {
+            font-size: 42px;
+            font-weight: 900;
+            margin: 10px 0 30px 0;
+            min-height: 50px;
+        }
+
+        .hints {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .hint-chip {
+            background: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #aaa;
+            border: 1px solid #444;
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
+
+        /* Mic Button */
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #1DB954;
+            border: none;
+            color: black;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mic-btn.listening {
+            background-color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Text Input Fallback */
+        .text-input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background: #1e1e1e;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .text-input:focus {
+            border-color: #1DB954;
+            outline: none;
+        }
+
+        .progress {
+            margin-top: 30px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .result-message {
+            margin-top: 20px;
+            height: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #b3b3b3;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(231, 76, 60, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>El vs La</h1>
+    <h2 id="class-title">Class Vocabulary</h2>
+
+    <!-- Mode Switch -->
+    <div class="mode-switch"
+        style="background: #282828; border-radius: 20px; padding: 5px; display: flex; margin-bottom: 20px; border: 1px solid #333;">
+        <button class="mode-btn active" id="btn-chill" onclick="setMode('chill')"
+            style="background: transparent; border: none; color: #777; padding: 8px 16px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s;">Chill
+            Mode 🧊</button>
+        <button class="mode-btn" id="btn-practice" onclick="setMode('practice')"
+            style="background: transparent; border: none; color: #777; padding: 8px 16px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s;">Practice
+            Mode ⏱️</button>
+    </div>
+
+    <!-- Stats Bar (Practice Mode) -->
+    <div class="stats-bar" id="stats-bar"
+        style="display: none; width: 300px; justify-content: space-between; margin-bottom: 20px; font-size: 14px; color: #b3b3b3;">
+        <div class="stat-box" style="text-align: center;">
+            <span class="stat-val" id="timer"
+                style="font-weight: bold; color: white; display: block; font-size: 16px;">00:00</span>
+            <span style="font-size:10px; opacity:0.7;">Time</span>
+        </div>
+        <div class="stat-box" style="text-align: center;">
+            <span class="stat-val" style="color: #2ecc71;" id="score-correct">0</span>
+            <span style="font-size:10px; opacity:0.7;">Correct</span>
+        </div>
+        <div class="stat-box" style="text-align: center;">
+            <span class="stat-val" style="color: #e74c3c;" id="score-wrong">0</span>
+            <span style="font-size:10px; opacity:0.7;">Retry</span>
+        </div>
+    </div>
+
+    <div class="game-container">
+
+        <div class="hints">
+            <span class="hint-chip">El</span>
+            <span class="hint-chip">La</span>
+            <span class="hint-chip">Lo</span>
+            <span class="hint-chip">Los</span>
+            <span class="hint-chip">Las</span>
+        </div>
+
+        <div class="noun-display" id="noun-display">Loading...</div>
+
+        <div class="input-area">
+            <button class="mic-btn" id="mic-btn" onclick="toggleListening()">🎙️</button>
+            <p style="font-size: 14px; color: #fff; margin: 10px 0;">Tap & Say: <b>(Article) + (Noun)</b></p>
+            <p style="font-size: 11px; color: #555; margin: 0;">Access microphone to play.</p>
+        </div>
+
+        <div class="result-message" id="result-message"></div>
+    </div>
+
+    <div class="progress" id="progress">1 / 5</div>
+
+    <!-- Summary Overlay (Hidden by default) -->
+    <div id="summary-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100;">
+        <h2 style="color: #1DB954; font-size: 28px; margin-bottom: 30px;">Session Complete!</h2>
+        <div style="text-align: center; margin-bottom: 40px;">
+            <p style="font-size: 18px; color: #ccc;">Time: <span id="final-time"
+                    style="color: white; font-weight: bold;">00:00</span></p>
+            <p style="font-size: 18px; color: #ccc;">Score: <span id="final-score"
+                    style="color: white; font-weight: bold;">0/0</span></p>
+        </div>
+        <button onclick="restartGame()"
+            style="background: #1DB954; border: none; padding: 15px 40px; border-radius: 30px; color: black; font-weight: bold; font-size: 16px; cursor: pointer;">Play
+            Again</button>
+        <button onclick="closeSummary()"
+            style="background: transparent; border: 1px solid #555; margin-top: 15px; padding: 10px 30px; border-radius: 30px; color: white; font-size: 14px; cursor: pointer;">Close</button>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Data comes from URL params or default
+        const songData = {
+            "default": [
+                { noun: "Camisa", article: "La" },
+                { noun: "Amor", article: "El" },
+                { noun: "Alma", article: "El" },
+                { noun: "Pena", article: "La" },
+                { noun: "Culpa", article: "La" },
+                { noun: "Embrujo", article: "El" },
+                { noun: "Difunto", article: "El" }
+            ]
+        };
+
+        // State
+        let items = songData["default"];
+        let currentIndex = 0;
+        let isListening = false;
+        let recognition;
+
+        // Mode State
+        let mode = 'chill'; // 'chill' or 'practice'
+        let effectiveSeconds = 0;
+        let timerInterval = null;
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        window.onload = function () {
+            // Setup Speech Recognition
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'es-ES';
+
+                recognition.onstart = function () {
+                    isListening = true;
+                    document.getElementById('mic-btn').classList.add('listening');
+                    document.getElementById('result-message').innerText = "Listening...";
+                    document.getElementById('result-message').style.color = "#aaa";
+                };
+
+                recognition.onend = function () {
+                    isListening = false;
+                    document.getElementById('mic-btn').classList.remove('listening');
+                    if (document.getElementById('result-message').innerText === "Listening...") {
+                        // Keep text if we are processing, but here we just clear if no result
+                        // document.getElementById('result-message').innerText = "";
+                    }
+                };
+
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    checkAnswer(transcript);
+                };
+
+            } else {
+                document.getElementById('mic-btn').style.display = 'none';
+                document.getElementById('result-message').innerText = "Voice not supported in this browser.";
+            }
+
+            // Get Class ID/Number or Song
+            const urlParams = new URLSearchParams(window.location.search);
+            const classId = urlParams.get('class');
+            if (classId) {
+                document.getElementById('class-title').innerText = `Class ${classId} Vocabulary`;
+            } else {
+                const songParam = urlParams.get('song');
+                if (songParam && songData[decodeURIComponent(songParam)]) {
+                    items = songData[decodeURIComponent(songParam)];
+                } else if (songParam) {
+                    // Try to match partial keys if full match fails?
+                    // For now default logic applies
+                }
+            }
+
+            loadItem();
+        };
+
+        function setMode(newMode) {
+            mode = newMode;
+
+            // Toggle Active UI
+            document.getElementById('btn-chill').style.background = mode === 'chill' ? '#333' : 'transparent';
+            document.getElementById('btn-chill').style.color = mode === 'chill' ? 'white' : '#777';
+
+            document.getElementById('btn-practice').style.background = mode === 'practice' ? '#333' : 'transparent';
+            document.getElementById('btn-practice').style.color = mode === 'practice' ? 'white' : '#777';
+
+            // Show/Hide Stats
+            document.getElementById('stats-bar').style.display = mode === 'practice' ? 'flex' : 'none';
+
+            // Reset Session
+            currentIndex = 0;
+            loadItem();
+
+            if (mode === 'practice') {
+                resetStats();
+                startTimer();
+            } else {
+                stopTimer();
+            }
+        }
+
+        function resetStats() {
+            effectiveSeconds = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            updateStatsDisplay();
+        }
+
+        function updateStatsDisplay() {
+            const mins = Math.floor(effectiveSeconds / 60);
+            const secs = effectiveSeconds % 60;
+            document.getElementById('timer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('score-correct').innerText = correctCount;
+            document.getElementById('score-wrong').innerText = wrongCount;
+        }
+
+        function startTimer() {
+            stopTimer();
+            timerInterval = setInterval(() => {
+                effectiveSeconds++;
+                updateStatsDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function loadItem() {
+            const item = items[currentIndex];
+            document.getElementById('noun-display').innerText = item.noun;
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${items.length}`;
+            document.getElementById('result-message').innerText = "";
+            document.getElementById('result-message').style.color = "#b3b3b3";
+        }
+
+        function toggleListening() {
+            if (!recognition) return;
+            if (isListening) recognition.stop();
+            else recognition.start();
+        }
+
+        function checkAnswer(input) {
+            const item = items[currentIndex];
+            const expected = `${item.article} ${item.noun}`.toLowerCase();
+            const cleanedInput = input.trim().toLowerCase();
+
+            // Simple inclusion check
+            if (cleanedInput.includes(expected)) {
+                // Correct
+                if (mode === 'practice') {
+                    correctCount++;
+                    updateStatsDisplay();
+                }
+
+                document.getElementById('result-message').innerText = `Correcto! ${item.article} ${item.noun}`;
+                document.getElementById('result-message').style.color = "#1DB954";
+
+                confetti({
+                    particleCount: 80,
+                    spread: 60,
+                    origin: { y: 0.6 },
+                    colors: ['#1DB954', '#ffffff']
+                });
+
+                setTimeout(nextItem, 1500);
+            } else {
+                // Wrong
+                if (mode === 'practice') {
+                    wrongCount++;
+                    updateStatsDisplay();
+                }
+
+                document.getElementById('result-message').innerText = `You said: "${input}". Try: ${item.article} ${item.noun}`;
+                document.getElementById('result-message').style.color = "#e74c3c";
+
+                const container = document.querySelector('.game-container');
+                container.style.animation = 'none';
+                container.offsetHeight;
+                container.style.animation = 'shake 0.5s';
+            }
+        }
+
+        function nextItem() {
+            if (currentIndex < items.length - 1) {
+                currentIndex++;
+                loadItem();
+            } else {
+                // End of list
+                if (mode === 'practice') {
+                    stopTimer();
+                    showSummary();
+                } else {
+                    // Chill mode loops
+                    currentIndex = 0;
+                    loadItem();
+                }
+            }
+        }
+
+        function showSummary() {
+            const mins = Math.floor(effectiveSeconds / 60);
+            const secs = effectiveSeconds % 60;
+            document.getElementById('final-time').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('final-score').innerText = `${correctCount}/${items.length}`; // Simple score
+            document.getElementById('summary-overlay').style.display = 'flex';
+        }
+
+        function restartGame() {
+            document.getElementById('summary-overlay').style.display = 'none';
+            setMode('practice'); // Restart in practice
+        }
+
+        function closeSummary() {
+            document.getElementById('summary-overlay').style.display = 'none';
+            setMode('chill'); // Go back to chill
+        }
+
+    </script>
+</body>
+
+</html>

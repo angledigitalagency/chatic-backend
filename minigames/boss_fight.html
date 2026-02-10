@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day 6: Final Boss Simulator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700;900&family=Helvetica+Neue:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .card.active {
+            transform: scale(1.02);
+            border-color: #000;
+        }
+
+        .card-content {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .scenario-text {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .prompt-text {
+            font-size: 20px;
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 30px;
+        }
+
+        /* Interaction Area */
+        .interaction-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Hold to Speak Button */
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mic-btn:active,
+        .mic-btn.recording {
+            transform: scale(0.9);
+            background: #ff4757;
+            color: white;
+            box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4);
+        }
+
+        .mic-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Reveal Overlay */
+        .reveal-container {
+            margin-top: 20px;
+            width: 100%;
+            position: relative;
+            height: 60px;
+            background: #333;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .reveal-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 1;
+            /* Behind overlay initially? No, text is the answer */
+            background: #000;
+        }
+
+        .reveal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #e0e0e0;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.4s ease;
+        }
+
+        .reveal-container.revealed .reveal-overlay {
+            transform: translateY(100%);
+        }
+
+        /* Navigation */
+        .nav-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .dot.active {
+            background: #000;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <h1>The Rhythm of Existence</h1>
+            <p>Phase 1: Human Scenarios</p>
+        </div>
+
+        <!-- CARD CONTAINER -->
+        <div id="card-container">
+            <!-- Cards injected by JS -->
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="nav-dots" id="nav-dots">
+            <!-- Dots injected by JS -->
+        </div>
+
+    </div>
+
+    <script>
+        // Data for the scenarios
+        const scenarios = [
+            {
+                context: "You are in a car with a friend.",
+                prompt: "Ask him if he has the soda.",
+                answer: "¿Tienes el refresco?",
+                melody: "Possession"
+            },
+            {
+                context: "You meet someone new.",
+                prompt: "Tell them you have a house in the USA.",
+                answer: "Tengo una casa en los Estados Unidos.",
+                melody: "Possession"
+            },
+            {
+                context: "You are leaving work.",
+                prompt: "Tell your colleague you are going to the office.",
+                answer: "Voy a la oficina.",
+                melody: "Movement"
+            },
+            {
+                context: "You are hungry.",
+                prompt: "Tell your friend you are going to eat pizza.",
+                answer: "Voy a comer pizza.",
+                melody: "Movement"
+            },
+            {
+                context: "You see a friend looking down.",
+                prompt: "Ask him if he is sad.",
+                answer: "¿Estás triste?",
+                melody: "Mood"
+            },
+            {
+                context: "Someone asks how you are.",
+                prompt: "Tell them you are busy right now.",
+                answer: "Estoy ocupado ahora.",
+                melody: "Mood"
+            }
+        ];
+
+        let currentIndex = 0;
+        const container = document.getElementById('card-container');
+        const dotsContainer = document.getElementById('nav-dots');
+
+        function renderCard(index) {
+            const data = scenarios[index];
+            container.innerHTML = `
+                <div class="card active">
+                    <div class="card-content">
+                        <div style="font-size: 10px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">
+                            ${data.melody} Melody
+                        </div>
+                        <div class="scenario-text">${data.context}</div>
+                        <div class="prompt-text">${data.prompt}</div>
+
+                        <div class="interaction-area">
+                            <button class="mic-btn" id="mic-btn" onmousedown="startRecording()" onmouseup="stopRecording()" ontouchstart="startRecording()" ontouchend="stopRecording()">
+                                🎙️
+                            </button>
+                            <span class="mic-label" id="mic-status">Hold to Speak</span>
+                            
+                            <div class="reveal-container" onclick="this.classList.add('revealed')">
+                                <div class="reveal-text">${data.answer}</div>
+                                <div class="reveal-overlay">Tap to Reveal Answer</div>
+                            </div>
+                        </div>
+                         
+                         <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                             <button onclick="prevCard()" style="background:none; border:none; cursor:pointer; color:#999; ${index === 0 ? 'visibility:hidden' : ''}">← Prev</button>
+                             <button onclick="nextCard()" style="background:none; border:none; cursor:pointer; color:#000; font-weight:bold;">${index === scenarios.length - 1 ? 'Finish' : 'Next →'}</button>
+                         </div>
+                    </div>
+                </div>
+            `;
+            updateDots(index);
+        }
+
+        function updateDots(index) {
+            dotsContainer.innerHTML = scenarios.map((_, i) =>
+                `<div class="dot ${i === index ? 'active' : ''}"></div>`
+            ).join('');
+        }
+
+        function nextCard() {
+            if (currentIndex < scenarios.length - 1) {
+                currentIndex++;
+                renderCard(currentIndex);
+            } else {
+                alert("Challenge Complete! Great job applying the Melodies.");
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCard(currentIndex);
+            }
+        }
+
+        // Mock Recording Logic
+        function startRecording() {
+            document.getElementById('mic-btn').classList.add('recording');
+            document.getElementById('mic-status').innerText = "Listening...";
+            document.getElementById('mic-status').style.color = "#ff4757";
+        }
+
+        function stopRecording() {
+            document.getElementById('mic-btn').classList.remove('recording');
+            document.getElementById('mic-status').innerText = "Hold to Speak";
+            document.getElementById('mic-status').style.color = "#999";
+        }
+
+        // Initialize
+        renderCard(0);
+
+    </script>
+</body>
+
+</html>

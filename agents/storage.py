@@ -59,7 +59,7 @@ class Storage:
         SHEET_IDS = {
             "ifeelsochatty": "1RqHrKVi_241nKOkCG2hfuTsO3vdpMpIDueiFQm5snXA",
             "chatic": "1RqHrKVi_241nKOkCG2hfuTsO3vdpMpIDueiFQm5snXA", # Alias for backward compatibility
-            "fluency": "1FBTeBWYsrTDWo_jRiT1_gjpq2EZFGTSI-zkcbIu_VxE"
+            "fluency": "1RqHrKVi_241nKOkCG2hfuTsO3vdpMpIDueiFQm5snXA"
         }
         
         target_product = self.product.lower()
@@ -224,13 +224,13 @@ class Storage:
     def _update_verb_index(self, track_info, verb_map):
         """
         Appends entries to the Verb_Index tab.
-        Schema: Verb | Sentence | Tense | Difficulty | Song_Title | Link | Safety
+        Schema: Verb | Sentence | Tense | Difficulty | Song_Title | Link | Safety | Question_ES
         """
         sheet = self.get_or_create_sheet()
         if not sheet: return
 
         # Define Headers (Added Safety Column)
-        headers = ["Verb", "Conjugated", "Sentence", "Tense", "Difficulty", "Song_Title", "Link", "Safety"]
+        headers = ["Verb", "Conjugated", "Sentence", "Tense", "Difficulty", "Song_Title", "Link", "Safety", "Question_ES"]
         self._ensure_tab(sheet, "Verb_Index", headers)
         ws = sheet.worksheet("Verb_Index")
         
@@ -241,6 +241,7 @@ class Storage:
                 is_safe = entry.get('is_safe', True)
                 reason = entry.get('safety_reason', 'Safe')
                 safety_str = "Safe" if is_safe else f"UNSAFE: {reason}"
+                question_es = entry.get('question_es', '')
 
                 rows_to_add.append([
                     verb,
@@ -250,10 +251,9 @@ class Storage:
                     entry['difficulty'],
                     track_info.get('title'),
                     track_info.get('external_url'),
-                    safety_str # New Column
+                    safety_str,
+                    question_es # New Column
                 ])
-        
-
         
         if rows_to_add:
             ws.append_rows(rows_to_add)
@@ -343,3 +343,109 @@ class Storage:
                 
         return active_users
 
+    def get_user_progress(self, user_dict):
+        """
+        Calculates the current day index (0-7+) based on Start_Date.
+        Returns integer day.
+        """
+        start_date_str = user_dict.get("Start_Date")
+        if not start_date_str:
+            return 0
+            
+        try:
+            from datetime import datetime
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            today = datetime.now()
+            delta = today - start_date
+            return delta.days
+        except Exception as e:
+            print(f"Error parsing date {start_date_str}: {e}")
+            return 0
+    def get_song_verbs(self, song_title):
+        """
+        Retrieves verb details (including Q&A) for a specific song from Verb_Index.
+        Returns a list of dicts.
+        """
+        sheet = self.get_or_create_sheet()
+        if not sheet: return []
+        
+        try:
+            ws = sheet.worksheet("Verb_Index")
+            all_records = ws.get_all_records()
+            # Filter in Python (inefficient for huge DB, but fine for MVP)
+            # Normalize title comparison
+            return [r for r in all_records if r.get("Song_Title", "").lower().strip() == song_title.lower().strip()]
+        except gspread.WorksheetNotFound:
+            return []
+        except Exception as e:
+            print(f"Error fetching verb index: {e}")
+            return []
+    def log_activity(self, email, activity_type, details):
+        """
+        Logs any user activity (Mini-Game, Email Open, etc.) to User_Logs.
+        details: dict containing specific metrics (e.g. {song, time, score})
+        """
+        if not self.client: return
+        
+        try:
+            sheet = self.get_or_create_sheet()
+            worksheet = sheet.worksheet("User_Logs")
+            
+            # Columns: Email, Type, Details, Date
+            # We might need to ensure these columns exist or just append freely if we are flexible
+            # For now, let's assume a standard structure.
+            # Row: [Email, Timestamp, Activity_Type, Song_Title, Details_JSON]
+            
+            import datetime
+            timestamp = datetime.datetime.utcnow().isoformat()
+            
+            row = [
+                email,
+                timestamp,
+                activity_type,
+                details.get('song_title', 'Unknown'),
+                json.dumps(details)
+            ]
+            
+            worksheet.append_row(row)
+            print(f"Logged activity for {email}: {activity_type}")
+            
+        except Exception as e:
+            print(f"Error logging activity: {e}")
+
+    def get_day_2_questions(self, song_title):
+        """
+        Retrieves manually curated Q&A for Day 2 from 'Day2_QnA' tab.
+        Returns a list of dicts: {Verb, Question_En, Question_Es, Answer, Sentence}
+        """
+        sheet = self.get_or_create_sheet()
+        if not sheet: return []
+
+        try:
+            self._ensure_tab(sheet, "Day2_QnA", ["Song_Title", "Verb", "Question_En", "Question_Es", "Answer", "Original_Sentence", "Is_Approved"])
+            ws = sheet.worksheet("Day2_QnA")
+            all_records = ws.get_all_records()
+            return [r for r in all_records if r.get("Song_Title", "").lower().strip() == song_title.lower().strip() and str(r.get("Is_Approved", "")).upper() == "TRUE"]
+        except Exception as e:
+            print(f"Error fetching Day 2 QnA: {e}")
+            return []
+
+    def log_day_2_question(self, song_title, verb, q_en, q_es, answer, sentence):
+        """
+        Logs a generated question to Day2_QnA for manual review.
+        Sets Is_Approved to FALSE by default.
+        """
+        sheet = self.get_or_create_sheet()
+        if not sheet: return
+
+        try:
+            ws = sheet.worksheet("Day2_QnA")
+            # Check for duplicates to avoid spamming
+            existing = ws.findall(sentence) # Simple check on sentence
+            if existing: return
+            
+            row = [song_title, verb, q_en, q_es, answer, sentence, "FALSE"]
+            ws.append_row(row)
+            print(f"Logged Day 2 candidate: {verb} - {q_en}")
+        except Exception as e:
+            print(f"Error logging Day 2 QnA: {e}")

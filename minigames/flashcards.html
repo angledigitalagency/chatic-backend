@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluency Radio - Flashcards</title>
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            /* Dark Theme Background */
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #1DB954;
+            /* Spotify Green Accent */
+            text-align: center;
+        }
+
+        /* Stats Bar (Quiz Mode) */
+        .stats-bar {
+            display: none;
+            /* Hidden in Chill Mode */
+            width: 300px;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #b3b3b3;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-val {
+            font-weight: bold;
+            color: white;
+            display: block;
+            font-size: 16px;
+        }
+
+        /* Mode Switcher */
+        .mode-switch {
+            background: #282828;
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: #777;
+            padding: 8px 16px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #333;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Flashcard Container */
+        .card-container {
+            perspective: 1000px;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* FLIP EFFECT */
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card.shake {
+            animation: shake 0.5s;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            user-select: none;
+        }
+
+        /* Front Face (Spanish) */
+        .card-front {
+            background-color: #282828;
+            /* Dark Card */
+            color: #ffffff;
+            border: 2px solid #333;
+        }
+
+        /* Back Face (English/Meaning) - Rotated */
+        .card-back {
+            background-color: #ffffff;
+            /* Light Card for contrast */
+            color: #121212;
+            transform: rotateY(180deg);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 20px;
+            min-height: 60px;
+            /* Reserve space */
+        }
+
+        /* Quiz Controls (Hidden by default) */
+        .quiz-controls {
+            display: none;
+            gap: 15px;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-wrong {
+            background-color: #e74c3c;
+            width: 60px;
+        }
+
+        .btn-wrong:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-correct {
+            background-color: #27ae60;
+            width: 60px;
+        }
+
+        .btn-correct:hover {
+            background-color: #2ecc71;
+        }
+
+        .progress {
+            margin-top: 20px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        /* Idle Overlay */
+        #idle-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: rotateY(180deg) translateX(0);
+            }
+
+            25% {
+                transform: rotateY(180deg) translateX(-10px);
+            }
+
+            50% {
+                transform: rotateY(180deg) translateX(10px);
+            }
+
+            75% {
+                transform: rotateY(180deg) translateX(-10px);
+            }
+
+            100% {
+                transform: rotateY(180deg) translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 id="song-title">Song Vocabulary</h1>
+
+    <!-- Mode Switch -->
+    <div class="mode-switch">
+        <button class="mode-btn active" id="btn-chill" onclick="setMode('chill')">Chill Mode 🧊</button>
+        <button class="mode-btn" id="btn-quiz" onclick="setMode('quiz')">Quiz Mode 🧠</button>
+    </div>
+
+    <!-- Stats Bar (Quiz Mode) -->
+    <div class="stats-bar" id="stats-bar">
+        <div class="stat-box">
+            <span class="stat-val" id="timer">00:00</span>
+            <span style="font-size:10px; opacity:0.7;">Effective Time</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val" style="color: #f1c40f;" id="idle-count">0</span>
+            <span style="font-size:10px; opacity:0.7;">Idle Stops</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val" style="color: #2ecc71;" id="score-correct">0</span>
+            <span style="font-size:10px; opacity:0.7;">Good</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val" style="color: #e74c3c;" id="score-wrong">0</span>
+            <span style="font-size:10px; opacity:0.7;">Retry</span>
+        </div>
+        <button onclick="saveSession()"
+            style="padding: 5px 10px; font-size: 12px; height: 30px; align-self: center; background: #333; border: 1px solid #555;">💾
+            Save</button>
+    </div>
+
+    <!-- Flashcard -->
+    <div class="card-container" onclick="handleCardClick()">
+        <div class="card" id="flashcard">
+            <div class="card-face card-front" id="card-front">
+                Front
+            </div>
+            <div class="card-face card-back" id="card-back">
+                Back
+            </div>
+        </div>
+    </div>
+
+    <!-- Chill Controls -->
+    <div class="controls" id="chill-controls">
+        <button id="prevBtn" onclick="prevCard()">← Prev</button>
+        <button id="nextBtn" onclick="nextCard()">Next →</button>
+    </div>
+
+    <!-- Quiz Controls -->
+    <div class="controls quiz-controls" id="quiz-controls">
+        <button class="btn-wrong" onclick="markResult(false)">✕</button>
+        <button class="btn-correct" onclick="markResult(true)">✓</button>
+    </div>
+
+    <div class="progress" id="progress">1 / 5</div>
+
+    <!-- Idle Overlay -->
+    <div id="idle-overlay" onclick="resumeSession()">
+        <h2 style="margin-bottom: 20px;">Still there? 👀</h2>
+        <p style="color: #ccc; margin-bottom: 30px;">Check the answer so you keep learning!</p>
+        <button style="font-size: 18px; padding: 15px 40px; background: #1DB954; color: black; font-weight: bold;">I'm
+            Back!</button>
+    </div>
+
+    <script>
+        // --- DATA SOURCE ---
+        const songData = {
+            "La Camisa Negra": [
+                { front: "La Camisa", back: "The Shirt" },
+                { front: "Negra", back: "Black" },
+                { front: "Amor", back: "Love" },
+                { front: "Dolor", back: "Pain" },
+                { front: "Mentira", back: "Lie" },
+                { front: "Cama", back: "Bed" },
+                { front: "Vivir", back: "To Live" },
+                { front: "Morir", back: "To Die" }
+            ]
+        };
+
+        // --- STATE ---
+        let currentSong = "La Camisa Negra";
+        let userEmail = ""; // New
+        let currentIndex = 0;
+        let cards = [];
+        let mode = 'chill'; // 'chill' or 'quiz'
+        let isFlipped = false;
+
+        // Timer State
+        let effectiveSeconds = 0;
+        let timerInterval = null;
+        let isIdle = false;
+        let idleStops = 0;
+        let lastInteraction = Date.now();
+        const IDLE_THRESHOLD = 60000; // 60 seconds
+
+        // Quiz Metrics
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        // --- INIT ---
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const songParam = urlParams.get('song');
+            const emailParam = urlParams.get('email'); // Get Email
+            if (songParam) currentSong = decodeURIComponent(songParam);
+            if (emailParam) userEmail = decodeURIComponent(emailParam);
+
+            if (songData[currentSong]) {
+                cards = songData[currentSong];
+            } else {
+                currentSong = "La Camisa Negra"; // Fallback
+                cards = songData[currentSong];
+            }
+
+            document.getElementById('song-title').innerText = currentSong;
+            updateCard();
+
+            // Start Idle Check Loop (Always running but logic triggers only in Quiz Mode)
+            setInterval(checkIdle, 1000);
+        };
+
+        // --- MODE SWITCHING ---
+        function setMode(newMode) {
+            mode = newMode;
+
+            // UI Toggle
+            document.getElementById('btn-chill').classList.toggle('active', mode === 'chill');
+            document.getElementById('btn-quiz').classList.toggle('active', mode === 'quiz');
+
+            // Show/Hide Controls
+            document.getElementById('stats-bar').style.display = mode === 'quiz' ? 'flex' : 'none';
+            document.getElementById('chill-controls').style.display = mode === 'chill' ? 'flex' : 'none';
+            document.getElementById('quiz-controls').style.display = 'none'; // Hidden until flip
+
+            // Reset Layout
+            resetCardState();
+
+            if (mode === 'quiz') {
+                startTimer();
+                // Randomize cards for quiz?
+                // cards.sort(() => Math.random() - 0.5); 
+                currentIndex = 0;
+                updateCard();
+            } else {
+                stopTimer();
+            }
+        }
+
+        function resetCardState() {
+            isFlipped = false;
+            document.getElementById('flashcard').classList.remove('flipped');
+            if (mode === 'quiz') {
+                document.getElementById('quiz-controls').style.display = 'none';
+            }
+        }
+
+        // --- INTERACTION ---
+        function handleCardClick() {
+            if (mode === 'chill') {
+                flipCard();
+            } else if (mode === 'quiz') {
+                if (!isFlipped) {
+                    flipCard();
+                    // Show scoring buttons
+                    setTimeout(() => {
+                        document.getElementById('quiz-controls').style.display = 'flex';
+                    }, 200);
+                }
+            }
+            lastInteraction = Date.now();
+        }
+
+        function flipCard() {
+            const card = document.getElementById('flashcard');
+            card.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        function updateCard() {
+            resetCardState();
+            const item = cards[currentIndex];
+            document.getElementById('card-front').innerText = item.front;
+            document.getElementById('card-back').innerText = item.back;
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${cards.length}`;
+
+            // Chill Nav Buttons State
+            document.getElementById('prevBtn').disabled = (currentIndex === 0);
+            document.getElementById('nextBtn').disabled = (currentIndex === cards.length - 1);
+        }
+
+        // --- QUIZ LOGIC ---
+        function markResult(isCorrect) {
+            if (isCorrect) {
+                correctCount++;
+                document.getElementById('score-correct').innerText = correctCount;
+                triggerConfetti();
+                // Auto Advance
+                setTimeout(() => {
+                    if (currentIndex < cards.length - 1) {
+                        currentIndex++;
+                    } else {
+                        currentIndex = 0; // Loop or Finish? Let's loop for endless drill
+                        // Or shuffle
+                    }
+                    updateCard();
+                }, 800);
+
+            } else {
+                wrongCount++;
+                document.getElementById('score-wrong').innerText = wrongCount;
+                // Shake effect
+                const card = document.getElementById('flashcard');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
+
+                // Allow them to look at it again?
+                // Or auto advance? User said "put aside wrong ones". 
+                // For now, let's keep it simple: Stay on card so they study it, then they must manually click next or re-score?
+                // Actually, standard flow: Flip card back to Front to re-try? 
+
+                // Let's just advance for now to keep flow, but maybe log it.
+                setTimeout(() => {
+                    if (currentIndex < cards.length - 1) currentIndex++;
+                    else currentIndex = 0;
+                    updateCard();
+                }, 800);
+            }
+            lastInteraction = Date.now();
+        }
+
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#1DB954', '#ffffff', '#f1c40f']
+            });
+        }
+
+        // --- TIMER & IDLE ---
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (!isIdle) {
+                    effectiveSeconds++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(effectiveSeconds / 60);
+            const secs = effectiveSeconds % 60;
+            document.getElementById('timer').innerText =
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function checkIdle() {
+            if (mode !== 'quiz') return;
+
+            if (!isIdle && (Date.now() - lastInteraction > IDLE_THRESHOLD)) {
+                isIdle = true;
+                idleStops++;
+                document.getElementById('idle-count').innerText = idleStops;
+                document.getElementById('idle-overlay').style.display = 'flex';
+                // Timer effectively pauses because `seconds++` gatechecks `!isIdle`
+            }
+        }
+
+        function resumeSession() {
+            isIdle = false;
+            lastInteraction = Date.now();
+            document.getElementById('idle-overlay').style.display = 'none';
+        }
+
+        // --- CHILL NAV ---
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+    </script>
+</body>
+
+</html>
