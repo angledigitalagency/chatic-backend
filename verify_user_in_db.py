@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from agents.storage import Storage
 
-def verify_user(email="sharkmindinvest@gmail.com"):
+def verify_user(email="agenciaesencial@gmail.com"):
     # Load Environment Variables for Google API Auth
     load_dotenv()
     

@@ -306,6 +306,57 @@ def log_practice():
         print(f"Error in log_practice: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/test-email', methods=['GET'])
+def test_email():
+    """
+    Diagnostic Endpoint: Sends a test email to the provided ?email= address.
+    Returns:
+    - 200: Email Sent Successfully.
+    - 500: Error message (including exception details).
+    """
+    email = request.args.get('email')
+    if not email:
+        return jsonify({'error': 'Missing email parameter'}), 400
+    
+    try:
+        from agents.deliverer import Deliverer
+        # Initialize Deliverer (fluency)
+        deliverer = Deliverer(identity="fluency")
+        
+        # Check Env Vars (safely)
+        user = os.getenv("FLUENCY_EMAIL_USER", "NOT_SET")
+        pw_len = len(os.getenv("FLUENCY_EMAIL_PASSWORD", ""))
+        
+        debug_info = {
+            "user": user,
+            "pw_length": pw_len,
+            "host": os.getenv("EMAIL_HOST", "smtp.gmail.com"),
+            "port": os.getenv("EMAIL_PORT", "587")
+        }
+        
+        # Send
+        success = deliverer.send_welcome_email(email, "Test User")
+        
+        if success:
+            return jsonify({
+                'status': 'success', 
+                'message': f'Email sent to {email}',
+                'debug': debug_info
+            }), 200
+        else:
+            return jsonify({
+                'status': 'failure', 
+                'message': 'Deliverer returned False (Check server logs)',
+                'debug': debug_info
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            'status': 'error', 
+            'message': str(e),
+            'type': str(type(e))
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4242))
     app.run(host='0.0.0.0', port=port)
