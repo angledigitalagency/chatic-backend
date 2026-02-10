@@ -310,51 +310,54 @@ def log_practice():
 def test_email():
     """
     Diagnostic Endpoint: Sends a test email to the provided ?email= address.
-    Returns:
-    - 200: Email Sent Successfully.
-    - 500: Error message (including exception details).
     """
     email = request.args.get('email')
     if not email:
         return jsonify({'error': 'Missing email parameter'}), 400
     
+    debug_log = []
+    
     try:
-        from agents.deliverer import Deliverer
-        # Initialize Deliverer (fluency)
-        deliverer = Deliverer(identity="fluency")
+        import os
+        import resend
         
-        # Check Env Vars (safely)
-        user = os.getenv("FLUENCY_EMAIL_USER", "NOT_SET")
-        pw_len = len(os.getenv("FLUENCY_EMAIL_PASSWORD", ""))
+        # 1. Check Env Vars
+        resend_key = os.getenv('RESEND_API_KEY')
+        debug_log.append(f"RESEND_API_KEY Present? {bool(resend_key)}")
+        if resend_key:
+            debug_log.append(f"Key Prefix: {resend_key[:5]}...")
+        else:
+            return jsonify({'status': 'error', 'message': 'RESEND_API_KEY is MISSING from Environment', 'log': debug_log}), 500
+
+        resend.api_key = resend_key
         
-        debug_info = {
-            "user": user,
-            "pw_length": pw_len,
-            "host": os.getenv("EMAIL_HOST", "smtp.gmail.com"),
-            "port": os.getenv("EMAIL_PORT", "587")
+        # 2. Try Sending Directly (Bypass Deliverer for Diagnosis)
+        debug_log.append(f"Attempting direct send via 'resend' library to {email}...")
+        
+        params = {
+            "from": "Fluency Radio <onboarding@fluencyradio.com>", 
+            "to": [email],
+            "subject": "Resend Diagnostic Test 🧪",
+            "html": "<h1>It Works!</h1><p>Resend is operational.</p>",
         }
         
-        # Send
-        success = deliverer.send_welcome_email(email, "Test User")
+        response = resend.Emails.send(params)
+        debug_log.append(f"Resend Response: {response}")
         
-        if success:
-            return jsonify({
-                'status': 'success', 
-                'message': f'Email sent to {email}',
-                'debug': debug_info
-            }), 200
-        else:
-            return jsonify({
-                'status': 'failure', 
-                'message': 'Deliverer returned False (Check server logs)',
-                'debug': debug_info
-            }), 500
+        return jsonify({
+            'status': 'success', 
+            'message': 'Email sent via Direct Resend Call!',
+            'log': debug_log,
+            'response': str(response)
+        }), 200
             
     except Exception as e:
+        debug_log.append(f"EXCEPTION: {str(e)}")
         return jsonify({
             'status': 'error', 
             'message': str(e),
-            'type': str(type(e))
+            'type': str(type(e)),
+            'log': debug_log
         }), 500
 
 if __name__ == '__main__':
