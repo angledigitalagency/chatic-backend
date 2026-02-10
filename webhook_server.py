@@ -119,13 +119,12 @@ def handle_checkout_session(session):
         is_new_user = True # Assuming all paid users get welcome for now (MVP)
         if is_new_user:
             import threading
-            from fluency_radio.fluency_deliverer import FluencyDeliverer # Import here for thread scope
-
             def send_async_email(email, name, src):
                 try:
                     if src == 'fluency':
                         print(f"📻 Triggering Fluency Radio Welcome for {email}...")
-                        fluency_deliverer = FluencyDeliverer()
+                        from agents.deliverer import Deliverer
+                        fluency_deliverer = Deliverer(identity="fluency")
                         success = fluency_deliverer.send_welcome_email(email, name)
                         if success:
                             print("✅ Fluency Radio Welcome Email Sent!")
