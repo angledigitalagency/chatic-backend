@@ -514,8 +514,8 @@ class ContentManager:
         
         # Dynamic Links
         safe_title = title.replace(" ", "%20")
-        minigame_link = f"https://ifeelsochatty.com/minigames?song={safe_title}"
-        flashcard_link = f"https://ifeelsochatty.com/flashcards?song={safe_title}"
+        minigame_link = f"https://chatic-backend.onrender.com/games/article-game?song={safe_title}"
+        flashcard_link = f"https://chatic-backend.onrender.com/games/flashcards?song={safe_title}"
         
         # Extract Flashcard Data
         flashcard_words = []
@@ -1174,8 +1174,8 @@ class ContentManager:
         
         # --- 4. Final Template Assembly ---
         safe_title = title.replace(" ", "%20")
-        minigame_link = f"https://ifeelsochatty.com/minigames?song={safe_title}"
-        flashcard_link = f"https://ifeelsochatty.com/flashcards?song={safe_title}"
+        minigame_link = f"https://chatic-backend.onrender.com/games/article-game?song={safe_title}"
+        flashcard_link = f"https://chatic-backend.onrender.com/games/flashcards?song={safe_title}"
         
         subject = f"🎵 Day 2: Fluency Verbs ({title})"
         
@@ -1225,7 +1225,7 @@ class ContentManager:
             """
         
         # Define links
-        article_game_link = f"https://ifeelsochatty.com/minigames/article_game.html?song={safe_title}"
+        article_game_link = f"https://chatic-backend.onrender.com/games/article-game?song={safe_title}"
         
         body_text = f"Day 2: The Melody of... ({title})\n\n{content_stack_text}\n\nReview: {flashcard_link}\n Play: {article_game_link}"
 
@@ -1475,8 +1475,8 @@ class ContentManager:
         # Construct Email
         subject = f"Day 3: Action & Melody in {title}"
         safe_title = title.replace(" ", "%20")
-        minigame_link = f"https://ifeelsochatty.com/minigames/article_game.html?song={safe_title}"
-        flashcard_link = f"https://ifeelsochatty.com/flashcards?song={safe_title}"
+        minigame_link = f"https://chatic-backend.onrender.com/games/article-game?song={safe_title}"
+        flashcard_link = f"https://chatic-backend.onrender.com/games/flashcards?song={safe_title}"
 
         body_html = f"""
         <!DOCTYPE html>
@@ -1699,8 +1699,8 @@ class ContentManager:
         # Construct Email
         subject = f"Day 4: Connecting the Dots in {title}"
         safe_title = title.replace(" ", "%20")
-        minigame_link = f"https://ifeelsochatty.com/minigames/article_game.html?song={safe_title}"
-        flashcard_link = f"https://ifeelsochatty.com/flashcards?song={safe_title}"
+        minigame_link = f"https://chatic-backend.onrender.com/games/article-game?song={safe_title}"
+        flashcard_link = f"https://chatic-backend.onrender.com/games/flashcards?song={safe_title}"
 
         body_html = f"""
         <!DOCTYPE html>
@@ -2178,7 +2178,7 @@ class ContentManager:
                 <!-- CTA -->
                  <div style="text-align: center; margin-top: 50px;">
                     <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Want to track your progress?</p>
-                    <a href="https://ifeelsochatty.com/minigames/boss_fight.html" 
+                    <a href="https://chatic-backend.onrender.com/games/boss-fight" 
                        style="background-color: #000; color: #fff; padding: 18px 40px; border-radius: 40px; text-decoration: none; font-weight: 900; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                         🎙️ ENTER INTERACTIVE SIMULATOR
                     </a>

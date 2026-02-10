@@ -1,7 +1,7 @@
 import os
 import sys
 import stripe
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -359,6 +359,33 @@ def test_email():
             'type': str(type(e)),
             'log': debug_log
         }), 500
+
+
+# --- Game Routes ---
+
+@app.route('/games/flashcards')
+def serve_flashcards():
+    """
+    Serves the Flashcards Mini-Game.
+    """
+    return send_from_directory('minigames', 'flashcards.html')
+
+@app.route('/games/article-game')
+def serve_article_game():
+    """
+    Serves the Article Mini-Game.
+    """
+    return send_from_directory('minigames', 'article_game.html')
+
+@app.route('/games/boss-fight')
+def serve_boss_fight():
+    """
+    Serves the Boss Fight Mini-Game (Day 6).
+    """
+    try:
+        return send_from_directory('minigames', 'boss_fight.html')
+    except Exception as e:
+        return "Boss Fight Not Found", 404
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4242))
